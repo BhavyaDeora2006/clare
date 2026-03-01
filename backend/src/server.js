@@ -4,10 +4,8 @@ import dotenv from "dotenv"
 import intentRoutes from "./routes/intent.routes.js"
 
 dotenv.config()
-const PORT = process.env.PORT || 8000
+const PORT = process.env.PORT || 9000
 
-
-dotenv.config()
 
 const app = express()
 
