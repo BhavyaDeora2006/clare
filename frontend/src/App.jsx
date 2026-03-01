@@ -1,10 +1,9 @@
-import Craft from "./pages/Craft"
-function App() {
-  
+import Login from "./pages/Login"
 
+function App() {
   return (
     <>
-      <Craft />
+      <Login />
     </>
   )
 }
