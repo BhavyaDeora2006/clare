@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "clare",
+			"path": ".."
+		},
+		{
+			"name": "frontend",
+			"path": "../../../Documents/clare-2.0/frontend"
+		}
+	],
+	"settings": {}
+}
