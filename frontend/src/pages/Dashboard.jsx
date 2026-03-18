@@ -166,7 +166,7 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
                     overflow: "hidden", boxShadow: "0 0 0 2px #fff",
                 }}>
                     <img
-                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bhavya&backgroundColor=c5cebf"
+                        src="https://imgs.search.brave.com/bT1Vn8WOO2oMVeeB7eIgRzqPtD7_U0zLN9bt0gIS5R4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMDEv/NTAzLzc1Ni9zbWFs/bC9ib3ktZmFjZS1h/dmF0YXItY2FydG9v/bi1mcmVlLXZlY3Rv/ci5qcGc"
                         alt="avatar"
                         style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
                     />
@@ -210,20 +210,6 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
 
             {/* ── Sidebar footer ── */}
             <div style={{ marginTop: "auto", paddingTop: 24, borderTop: "1px solid rgba(214,211,208,0.6)" }}>
-                <button
-                    onClick={onBack}
-                    style={{
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: "12px 16px",
-                        fontSize: 14, color: "#78716c", background: "none", border: "none",
-                        cursor: "pointer", width: "100%", borderRadius: 12, transition: "all 0.15s",
-                    }}
-                >
-                    <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back
-                </button>
                 <button style={{
                     padding: "11px 16px", fontSize: 13.5, color: "rgba(239,68,68,0.7)",
                     background: "none", border: "none", cursor: "pointer", width: "100%",
@@ -247,8 +233,8 @@ const AppBackground = () => (
                     <button key={tab} style={{ fontSize: 14, fontWeight: 500, background: "none", border: "none", cursor: "pointer", paddingBottom: 4, color: tab === "Learn" ? "#1c1917" : "#a8a29e", borderBottom: tab === "Learn" ? "2px solid #57534e" : "2px solid transparent" }}>{tab}</button>
                 ))}
             </div>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#c5cebf,#8a9a7b)", overflow: "hidden", boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" }}>
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bhavya&backgroundColor=c5cebf" alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+            <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" }}>
+                <img src="https://imgs.search.brave.com/bT1Vn8WOO2oMVeeB7eIgRzqPtD7_U0zLN9bt0gIS5R4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMDEv/NTAzLzc1Ni9zbWFs/bC9ib3ktZmFjZS1h/dmF0YXItY2FydG9v/bi1mcmVlLXZlY3Rv/ci5qcGc" alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
             </div>
         </nav>
     </div>
@@ -338,7 +324,7 @@ const SECTIONS = {
 };
 
 export default function SettingsModal() {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("study");
     const ActiveContent = SECTIONS[activeSection];
 
@@ -357,11 +343,11 @@ export default function SettingsModal() {
         <>
             <AppBackground />
             <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)", backdropFilter: "blur(6px)" }} onClick={() => setIsOpen(false)} />
+                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)", backdropFilter: "blur(2px)" }} onClick={() => setIsOpen(false)} />
 
                 {/* Modal — slightly taller to give content room */}
                 <div className="animate-in" style={{
-                    position: "relative", zIndex: 10, width: "100%", maxWidth: 900, height: 600,
+                    position: "relative", zIndex: 10, width: "100%", maxWidth: 1000, height: 650,
                     backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)",
                     borderRadius: 20, display: "flex", overflow: "hidden",
                     boxShadow: "0 25px 60px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04)",
