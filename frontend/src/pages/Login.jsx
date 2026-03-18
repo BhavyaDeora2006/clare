@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp, signInWithGoogle } from '../services/authServices';
 import background from '../assets/clare-light-bg.png';
@@ -10,8 +11,8 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
