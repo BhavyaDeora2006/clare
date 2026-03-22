@@ -1,67 +1,56 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getPreferences, updatePreferences } from "../services/preferencesService";
+import Navbar from "../components/Navbar";
 
 /* ─────────────────────── Reusable Components ─────────────────────── */
 
 // Toggle Switch
 const ToggleSwitch = ({ enabled, onToggle, label }) => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 8px" }}>
-        <span style={{ fontSize: 15, color: "#57534e", fontWeight: 500 }}>{label}</span>
+    <div className="flex items-center justify-between py-5 px-2">
+        <span className="text-[15px] text-[#57534e] font-medium">{label}</span>
         <button
             onClick={onToggle}
-            style={{
-                position: "relative", display: "inline-flex", height: 24, width: 46,
-                alignItems: "center", borderRadius: 999, border: "none", cursor: "pointer",
-                backgroundColor: enabled ? "#8a9a7b" : "#d6d3d1", transition: "background-color 0.2s",
-                padding: 0, flexShrink: 0,
-            }}
+            className={`relative inline-flex h-6 w-[46px] items-center rounded-full border-none cursor-pointer shrink-0 transition-colors duration-200 p-0 ${enabled ? "bg-[#8a9a7b]" : "bg-[#d6d3d1]"
+                }`}
         >
-            <span style={{
-                display: "inline-block", height: 18, width: 18, borderRadius: "50%",
-                backgroundColor: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                transform: enabled ? "translateX(24px)" : "translateX(3px)",
-                transition: "transform 0.2s",
-            }} />
+            <span
+                className={`inline-block h-[18px] w-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform duration-200 ${enabled ? "translate-x-[24px]" : "translate-x-[3px]"
+                    }`}
+            />
         </button>
     </div>
 );
 
 // Radio Group
 const RadioGroup = ({ label, options, selectedValue, onChange }) => (
-    <div style={{ marginBottom: 36 }}>
-        <h4 style={{ fontSize: 14.5, fontWeight: 600, color: "#292524", margin: "0 0 16px" }}>{label}</h4>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+    <div className="mb-9">
+        <h4 className="text-[14.5px] font-semibold text-[#292524] m-0 mb-4">{label}</h4>
+        <div className="grid grid-cols-3 gap-[14px]">
             {options.map((opt) => {
                 const isSelected = selectedValue === opt.value;
                 return (
                     <button
                         key={opt.value}
                         onClick={() => onChange(opt.value)}
-                        style={{
-                            display: "flex", alignItems: "flex-start", gap: 12,
-                            borderRadius: 12, padding: "16px 18px", textAlign: "left", cursor: "pointer",
-                            border: isSelected ? "1px solid rgba(138,154,123,0.5)" : "1px solid rgba(214,211,208,0.9)",
-                            background: isSelected ? "#f4f6f1" : "#fff",
-                            boxShadow: isSelected ? "0 0 0 1px rgba(138,154,123,0.2)" : "none",
-                            transition: "all 0.15s",
-                        }}
+                        className={`flex items-start gap-3 rounded-xl py-4 px-[18px] text-left cursor-pointer transition-all duration-150 ${isSelected
+                            ? "border border-[#8a9a7b]/50 bg-[#f4f6f1] shadow-[0_0_0_1px_rgba(138,154,123,0.2)]"
+                            : "border border-[rgba(214,211,208,0.9)] bg-white shadow-none"
+                            }`}
                     >
-                        <span style={{
-                            marginTop: 2, display: "flex", height: 20, width: 20, flexShrink: 0,
-                            alignItems: "center", justifyContent: "center", borderRadius: "50%",
-                            border: isSelected ? "1.5px solid #8a9a7b" : "1.5px solid #d6d3d1",
-                            backgroundColor: "#fff",
-                        }}>
+                        <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] bg-white ${isSelected ? "border-[#8a9a7b]" : "border-[#d6d3d1]"
+                                }`}
+                        >
                             {isSelected && (
-                                <span style={{ height: 10, width: 10, borderRadius: "50%", backgroundColor: "#8a9a7b", display: "block" }} />
+                                <span className="block h-2.5 w-2.5 rounded-full bg-[#8a9a7b]" />
                             )}
                         </span>
-                        <div style={{ minWidth: 0 }}>
-                            <p style={{ fontSize: 14, fontWeight: 600, color: "#292524", lineHeight: 1.3, margin: 0 }}>
+                        <div className="min-w-0">
+                            <p className="text-[14px] font-semibold text-[#292524] leading-tight m-0">
                                 {opt.label}
                             </p>
                             {opt.description && (
-                                <p style={{ fontSize: 12.5, color: "#a8a29e", margin: "5px 0 0", lineHeight: 1.4 }}>
+                                <p className="text-[12.5px] text-[#a8a29e] mt-1.5 mb-0 leading-snug">
                                     {opt.description}
                                 </p>
                             )}
@@ -77,18 +66,12 @@ const RadioGroup = ({ label, options, selectedValue, onChange }) => (
 const OptionRow = ({ label, value, onClick }) => (
     <button
         onClick={onClick}
-        style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            width: "100%", padding: "22px 8px", background: "none", border: "none",
-            cursor: "pointer", borderRadius: 10, transition: "background 0.15s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = "#fafaf9"}
-        onMouseLeave={e => e.currentTarget.style.background = "none"}
+        className="flex items-center justify-between w-full py-[22px] px-2 bg-transparent border-none cursor-pointer rounded-[10px] transition-colors duration-150 hover:bg-[#fafaf9]"
     >
-        <span style={{ fontSize: 15, color: "#57534e", fontWeight: 500 }}>{label}</span>
-        <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#a8a29e" }}>
+        <span className="text-[15px] text-[#57534e] font-medium">{label}</span>
+        <span className="flex items-center gap-2 text-[14px] text-[#a8a29e]">
             {value && <span>{value}</span>}
-            <svg style={{ width: 16, height: 16 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
         </span>
@@ -97,30 +80,25 @@ const OptionRow = ({ label, value, onClick }) => (
 
 // Section Container
 const SectionContainer = ({ title, subtitle, children, footer }) => (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="flex flex-col h-full">
         {/* ── Header: more top breathing room ── */}
-        <div style={{ marginBottom: 32, paddingTop: 4 }}>
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "#1c1917", letterSpacing: "-0.01em", margin: "0 0 8px" }}>
+        <div className="mb-8 pt-1">
+            <h2 className="text-2xl font-bold text-[#1c1917] tracking-[-0.01em] m-0 mb-2">
                 {title}
             </h2>
             {subtitle && (
-                <p style={{ fontSize: 14, color: "#a8a29e", margin: 0, lineHeight: 1.5 }}>{subtitle}</p>
+                <p className="text-[14px] text-[#a8a29e] m-0 leading-relaxed">{subtitle}</p>
             )}
         </div>
 
         {/* ── Scrollable body ── */}
-        <div className="custom-scrollbar" style={{ flex: 1, overflowY: "auto", paddingRight: 8 }}>
+        <div className="custom-scrollbar flex-1 overflow-y-auto pr-2">
             {children}
         </div>
 
         {/* ── Footer with well-spaced buttons ── */}
         {footer && (
-            <div style={{
-                paddingTop: 22,
-                marginTop: 18,
-                borderTop: "1px solid rgba(214,211,208,0.8)",
-                display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 14,
-            }}>
+            <div className="pt-[22px] mt-[18px] border-t border-[rgba(214,211,208,0.8)] flex items-center justify-end gap-[14px]">
                 {footer}
             </div>
         )}
@@ -132,75 +110,55 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
     const navItems = [
         {
             id: "appearance", label: "Appearance",
-            icon: <svg style={{ width: 16, height: 16, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>,
+            icon: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>,
         },
         {
             id: "preferences", label: "Preferences",
-            icon: <svg style={{ width: 16, height: 16, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>,
+            icon: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>,
         },
         {
             id: "study", label: "Study Settings",
-            icon: <svg style={{ width: 16, height: 16, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
+            icon: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>,
         },
         {
             id: "security", label: "Security",
-            icon: <svg style={{ width: 16, height: 16, flexShrink: 0 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+            icon: <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
         },
     ];
 
     return (
-        <div style={{
-            width: 236,
-            flexShrink: 0,
-            borderRight: "1px solid rgba(214,211,208,0.7)",
-            display: "flex",
-            flexDirection: "column",
-            /* ── More top padding on the sidebar ── */
-            padding: "36px 20px 28px",
-            backgroundColor: "#fafaf8",
-        }}>
+        <div className="w-[236px] shrink-0 border-r border-[rgba(214,211,208,0.7)] flex flex-col pt-9 px-5 pb-7 bg-[#fafaf8]">
             {/* ── User Profile: more gap and bottom margin ── */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "0 6px", marginBottom: 36 }}>
-                <div style={{
-                    width: 50, height: 50, borderRadius: "50%", flexShrink: 0,
-                    background: "linear-gradient(135deg, #c5cebf, #8a9a7b)",
-                    overflow: "hidden", boxShadow: "0 0 0 2px #fff",
-                }}>
+            <div className="flex items-center gap-[14px] px-1.5 mb-9">
+                <div className="w-[50px] h-[50px] rounded-full shrink-0 bg-gradient-to-br from-[#c5cebf] to-[#8a9a7b] overflow-hidden shadow-[0_0_0_2px_#fff]">
                     <img
                         src="https://imgs.search.brave.com/bT1Vn8WOO2oMVeeB7eIgRzqPtD7_U0zLN9bt0gIS5R4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMDEv/NTAzLzc1Ni9zbWFs/bC9ib3ktZmFjZS1h/dmF0YXItY2FydG9v/bi1mcmVlLXZlY3Rv/ci5qcGc"
                         alt="avatar"
-                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                        className="w-full h-full object-cover rounded-full"
                     />
                 </div>
-                <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 15, fontWeight: 600, color: "#292524", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <div className="min-w-0">
+                    <p className="text-[15px] font-semibold text-[#292524] m-0 whitespace-nowrap overflow-hidden text-ellipsis">
                         Bhavya Deora
                     </p>
-                    <p style={{ fontSize: 12.5, color: "#a8a29e", margin: "4px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <p className="text-[12.5px] text-[#a8a29e] mt-1 mb-0 whitespace-nowrap overflow-hidden text-ellipsis">
                         bhavya@email.com
                     </p>
                 </div>
             </div>
 
             {/* ── Nav Items: more gap between each item ── */}
-            <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+            <nav className="flex-1 flex flex-col gap-1.5">
                 {navItems.map((item) => {
                     const isActive = activeSection === item.id;
                     return (
                         <button
                             key={item.id}
                             onClick={() => onSelect(item.id)}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 12, width: "100%",
-                                /* ── Taller nav items ── */
-                                padding: "13px 16px",
-                                borderRadius: 12, border: "none", cursor: "pointer",
-                                fontSize: 14, fontWeight: 500, textAlign: "left", transition: "all 0.15s",
-                                backgroundColor: isActive ? "rgba(138,154,123,0.14)" : "transparent",
-                                color: isActive ? "#4a6040" : "#78716c",
-                            }}
+                            className={`flex items-center gap-3 w-full py-[13px] px-4 rounded-xl border-none cursor-pointer text-[14px] font-medium text-left transition-all duration-150 ${isActive ? "bg-[#8a9a7b]/14 text-[#4a6040]" : "bg-transparent text-[#78716c]"
+                                }`}
                         >
-                            <span style={{ color: isActive ? "#6b7d5e" : "#a8a29e", display: "flex" }}>
+                            <span className={`flex ${isActive ? "text-[#6b7d5e]" : "text-[#a8a29e]"}`}>
                                 {item.icon}
                             </span>
                             {item.label}
@@ -210,12 +168,8 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
             </nav>
 
             {/* ── Sidebar footer ── */}
-            <div style={{ marginTop: "auto", paddingTop: 24, borderTop: "1px solid rgba(214,211,208,0.6)" }}>
-                <button style={{
-                    padding: "11px 16px", fontSize: 13.5, color: "rgba(239,68,68,0.7)",
-                    background: "none", border: "none", cursor: "pointer", width: "100%",
-                    textAlign: "left", borderRadius: 12, transition: "all 0.15s", marginTop: 4,
-                }}>
+            <div className="mt-auto pt-6 border-t border-[rgba(214,211,208,0.6)]">
+                <button className="py-[11px] px-4 text-[13.5px] text-red-500/70 bg-transparent border-none cursor-pointer w-full text-left rounded-xl transition-all duration-150 mt-1 hover:bg-gray-100/50">
                     Delete account
                 </button>
             </div>
@@ -225,97 +179,120 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
 
 /* ─────────────── Background ─────────────── */
 
-const AppBackground = () => (
-    <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #e8e4dd 0%, #ddd9d2 50%, #d4d0c8 100%)" }}>
-        <nav style={{ position: "relative", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 40px" }}>
-            <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: "0.25em", color: "#78716c" }}>CLARE</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-                {["Craft", "Learn", "Ask", "Refine", "Echo"].map((tab) => (
-                    <button key={tab} style={{ fontSize: 14, fontWeight: 500, background: "none", border: "none", cursor: "pointer", paddingBottom: 4, color: tab === "Learn" ? "#1c1917" : "#a8a29e", borderBottom: tab === "Learn" ? "2px solid #57534e" : "2px solid transparent" }}>{tab}</button>
-                ))}
-            </div>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" }}>
-                <img src="https://imgs.search.brave.com/bT1Vn8WOO2oMVeeB7eIgRzqPtD7_U0zLN9bt0gIS5R4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMDEv/NTAzLzc1Ni9zbWFs/bC9ib3ktZmFjZS1h/dmF0YXItY2FydG9v/bi1mcmVlLXZlY3Rv/ci5qcGc" alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-            </div>
-        </nav>
-    </div>
+
+
+/* ─────────────────── Button Styles ──────────────────── */
+
+const CancelBtn = ({ onClick }) => (
+    <button
+        onClick={onClick}
+        className="py-3 px-7 mb-4 text-[14px] font-medium text-[#78716c] border border-[#e7e5e4] rounded-xl bg-white cursor-pointer transition-colors duration-150 tracking-[0.01em] hover:bg-gray-50"
+    >
+        Cancel
+    </button>
+);
+
+const SaveBtn = ({ onClick, children = "Save Changes", className = "" }) => (
+    <button
+        onClick={onClick}
+        className={`py-3 px-7 mb-4 text-[14px] font-medium text-white border-none rounded-xl bg-[#8a9a7b] cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.14)] transition-colors duration-150 tracking-[0.01em] hover:bg-[#7a8a6b] ${className}`}
+    >
+        {children}
+    </button>
 );
 
 /* ─────────────────── Sections ──────────────────── */
 
-const AppearanceSection = () => {
-    const [theme, setTheme] = useState("dark");
-    const [accent, setAccent] = useState("sage");
-    const [reduceMotion, setReduceMotion] = useState(false);
+const AppearanceSection = ({ prefs, updateField, onSave, onCancel }) => {
     return (
-        <SectionContainer title="Appearance" subtitle="Customize the look and feel." footer={<><button style={cancelBtnStyle}>Cancel</button><button style={saveBtnStyle}>Save Changes</button></>}>
-            <RadioGroup label="Theme" options={[{ value: "light", label: "Light", description: "Clean and bright." }, { value: "dark", label: "Dark", description: "Easy on the eyes." }, { value: "system", label: "System", description: "Match OS setting." }]} selectedValue={theme} onChange={setTheme} />
-            <RadioGroup label="Accent Tone" options={[{ value: "sage", label: "Sage", description: "Calm & natural." }, { value: "slate", label: "Slate", description: "Cool & professional." }, { value: "neutral", label: "Neutral", description: "Minimal & clean." }]} selectedValue={accent} onChange={setAccent} />
-            <div style={{ borderTop: "1px solid #eeece9", marginTop: 8, paddingTop: 8 }}>
-                <ToggleSwitch label="Reduce Motion" enabled={reduceMotion} onToggle={() => setReduceMotion(!reduceMotion)} />
+        <SectionContainer
+            title="Appearance"
+            subtitle="Customize the look and feel."
+            footer={<><CancelBtn onClick={onCancel} /><SaveBtn onClick={onSave} /></>}
+        >
+            <RadioGroup
+                label="Theme"
+                options={[{ value: "light", label: "Light", description: "Clean and bright." }, { value: "dark", label: "Dark", description: "Easy on the eyes." }, { value: "system", label: "System", description: "Match OS setting." }]}
+                selectedValue={prefs.theme}
+                onChange={(v) => updateField("theme", v)}
+            />
+            <RadioGroup
+                label="Accent Tone"
+                options={[{ value: "sage", label: "Sage", description: "Calm & natural." }, { value: "slate", label: "Slate", description: "Cool & professional." }, { value: "neutral", label: "Neutral", description: "Minimal & clean." }]}
+                selectedValue={prefs.accent}
+                onChange={(v) => updateField("accent", v)}
+            />
+            <div className="border-t border-[#eeece9] mt-2 pt-2">
+                <ToggleSwitch label="Reduce Motion" enabled={prefs.reduce_motion} onToggle={() => updateField("reduce_motion", !prefs.reduce_motion)} />
             </div>
         </SectionContainer>
     );
 };
 
-const PreferencesSection = () => {
-    const [autoPlay, setAutoPlay] = useState(true);
-    const [autoExpand, setAutoExpand] = useState(false);
-    const [showPercent, setShowPercent] = useState(true);
+const PreferencesSection = ({ prefs, updateField, onSave, onCancel }) => {
     return (
-        <SectionContainer title="Preferences" subtitle="Control your learning experience." footer={<><button style={cancelBtnStyle}>Cancel</button><button style={saveBtnStyle}>Save Changes</button></>}>
-            <ToggleSwitch label="Auto-play Lessons" enabled={autoPlay} onToggle={() => setAutoPlay(!autoPlay)} />
-            <div style={{ borderTop: "1px solid #eeece9" }} />
-            <ToggleSwitch label="Auto-expand Chapters" enabled={autoExpand} onToggle={() => setAutoExpand(!autoExpand)} />
-            <div style={{ borderTop: "1px solid #eeece9" }} />
-            <ToggleSwitch label="Show Completion Percentage" enabled={showPercent} onToggle={() => setShowPercent(!showPercent)} />
+        <SectionContainer
+            title="Preferences"
+            subtitle="Control your learning experience."
+            footer={<><CancelBtn onClick={onCancel} /><SaveBtn onClick={onSave} /></>}
+        >
+            <ToggleSwitch label="Auto-play Lessons" enabled={prefs.auto_play} onToggle={() => updateField("auto_play", !prefs.auto_play)} />
+            <div className="border-t border-[#eeece9]" />
+            <ToggleSwitch label="Auto-expand Chapters" enabled={prefs.auto_expand} onToggle={() => updateField("auto_expand", !prefs.auto_expand)} />
+            <div className="border-t border-[#eeece9]" />
+            <ToggleSwitch label="Show Completion Percentage" enabled={prefs.show_percent} onToggle={() => updateField("show_percent", !prefs.show_percent)} />
         </SectionContainer>
     );
 };
 
-const StudySettingsSection = () => {
-    const [explanation, setExplanation] = useState("guided");
-    const [closure, setClosure] = useState("soft");
-    const [clarification, setClarification] = useState("guided-c");
-    const [memory, setMemory] = useState("suggested");
+const StudySettingsSection = ({ prefs, updateField, onSave, onCancel }) => {
     return (
-        <SectionContainer title="Study Settings" subtitle="Customize your learning experience." footer={<><button style={cancelBtnStyle}>Cancel</button><button style={saveBtnStyle}>Save Changes</button></>}>
-            <RadioGroup label="Explanation Style" options={[{ value: "straight", label: "Straight to the Point", description: "Concise explanations." }, { value: "guided", label: "Guided Understanding", description: "Step-by-step learning (Default)" }, { value: "conceptual", label: "Conceptual Mastery", description: "Deep conceptual links." }]} selectedValue={explanation} onChange={setExplanation} />
-            <RadioGroup label="Session Closure" options={[{ value: "open", label: "Open Ended", description: "No structured recap." }, { value: "soft", label: "Soft Closure", description: "Brief reviews and reflection." }, { value: "structured", label: "Structured Closure", description: "Recap and recall." }]} selectedValue={closure} onChange={setClosure} />
-            <RadioGroup label="Clarification Style" options={[{ value: "direct", label: "Direct", description: "Short, concise answers." }, { value: "guided-c", label: "Guided", description: "Step-by-step reasoning." }, { value: "exploratory", label: "Exploratory", description: "Extended conceptual links." }]} selectedValue={clarification} onChange={setClarification} />
-            <RadioGroup label="Memory Reinforcement" options={[{ value: "manual", label: "Manual", description: "Review only when chosen." }, { value: "suggested", label: "Suggested", description: "Occasional review cues." }, { value: "structured-m", label: "Structured", description: "Active recall surfacing." }]} selectedValue={memory} onChange={setMemory} />
+        <SectionContainer
+            title="Study Settings"
+            subtitle="Customize your learning experience."
+            footer={<><CancelBtn onClick={onCancel} /><SaveBtn onClick={onSave} /></>}
+        >
+            <RadioGroup
+                label="Explanation Style"
+                options={[{ value: "straight", label: "Straight to the Point", description: "Concise explanations." }, { value: "guided", label: "Guided Understanding", description: "Step-by-step learning (Default)" }, { value: "conceptual", label: "Conceptual Mastery", description: "Deep conceptual links." }]}
+                selectedValue={prefs.explanation_style}
+                onChange={(v) => updateField("explanation_style", v)}
+            />
+            <RadioGroup
+                label="Session Closure"
+                options={[{ value: "open", label: "Open Ended", description: "No structured recap." }, { value: "soft", label: "Soft Closure", description: "Brief reviews and reflection." }, { value: "structured", label: "Structured Closure", description: "Recap and recall." }]}
+                selectedValue={prefs.session_closure}
+                onChange={(v) => updateField("session_closure", v)}
+            />
+            <RadioGroup
+                label="Clarification Style"
+                options={[{ value: "direct", label: "Direct", description: "Short, concise answers." }, { value: "guided-c", label: "Guided", description: "Step-by-step reasoning." }, { value: "exploratory", label: "Exploratory", description: "Extended conceptual links." }]}
+                selectedValue={prefs.clarification_style}
+                onChange={(v) => updateField("clarification_style", v)}
+            />
+            <RadioGroup
+                label="Memory Reinforcement"
+                options={[{ value: "manual", label: "Manual", description: "Review only when chosen." }, { value: "suggested", label: "Suggested", description: "Occasional review cues." }, { value: "structured-m", label: "Structured", description: "Active recall surfacing." }]}
+                selectedValue={prefs.memory_reinforcement}
+                onChange={(v) => updateField("memory_reinforcement", v)}
+            />
         </SectionContainer>
     );
 };
 
-const SecuritySection = () => (
-    <SectionContainer title="Security" subtitle="Manage your account security." footer={<><button style={cancelBtnStyle}>Cancel</button><button style={saveBtnStyle}>Save Changes</button></>}>
-        <OptionRow label="Connected Accounts" value="Google" onClick={() => {}} />
-        <div style={{ borderTop: "1px solid #eeece9" }} />
-        <OptionRow label="Change Password" value="" onClick={() => {}} />
-        <div style={{ borderTop: "1px solid #eeece9" }} />
-        <OptionRow label="Active Sessions" value="This device" onClick={() => {}} />
+const SecuritySection = ({ prefs, updateField, onSave, onCancel }) => (
+    <SectionContainer
+        title="Security"
+        subtitle="Manage your account security."
+        footer={<><CancelBtn onClick={onCancel} /><SaveBtn onClick={onSave} /></>}
+    >
+        <OptionRow label="Connected Accounts" value="Google" onClick={() => { }} />
+        <div className="border-t border-[#eeece9]" />
+        <OptionRow label="Change Password" value="" onClick={() => { }} />
+        <div className="border-t border-[#eeece9]" />
+        <OptionRow label="Active Sessions" value="This device" onClick={() => { }} />
     </SectionContainer>
 );
-
-/* ─────────────── Button Styles ─────────────── */
-
-const cancelBtnStyle = {
-    /* ── Generous padding on both buttons ── */
-    padding: "12px 28px",
-    marginBottom: 16,
-    fontSize: 14, fontWeight: 500, color: "#78716c",
-    border: "1px solid #e7e5e4", borderRadius: 12, background: "#fff",
-    cursor: "pointer", transition: "background 0.15s", letterSpacing: "0.01em",
-};
-
-const saveBtnStyle = {
-    padding: "12px 28px",
-    marginBottom: 16,
-    fontSize: 14, fontWeight: 500, color: "#fff",
-    border: "none", borderRadius: 12, background: "#8a9a7b",
-    cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.14)", transition: "background 0.15s", letterSpacing: "0.01em",
-};
 
 const SECTIONS = {
     appearance: AppearanceSection,
@@ -324,17 +301,82 @@ const SECTIONS = {
     security: SecuritySection,
 };
 
+const defaultPrefs = {
+    theme: "dark",
+    accent: "sage",
+    reduce_motion: false,
+    auto_play: true,
+    auto_expand: false,
+    show_percent: true,
+    explanation_style: "guided",
+    session_closure: "soft",
+    clarification_style: "guided-c",
+    memory_reinforcement: "suggested",
+};
+
 export default function SettingsModal() {
     const [isOpen, setIsOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("study");
+
+    // Single source of truth for all preferences
+    const [prefs, setPrefs] = useState(defaultPrefs);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Fetch from backend
+    const loadPreferences = async () => {
+        try {
+            setIsLoading(true);
+            const data = await getPreferences();
+            if (data && Object.keys(data).length > 0) {
+                // Merge defaultPrefs with incoming data
+                setPrefs(prev => ({ ...prev, ...data }));
+            }
+        } catch (err) {
+            console.error("Failed to load preferences:", err.response?.data || err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Load preferences when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            loadPreferences();
+        }
+    }, [isOpen]);
+
+    const updateField = (key, value) => {
+        setPrefs(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleSave = async () => {
+        try {
+            await updatePreferences(prefs);
+            console.log("Successfully saved preferences");
+            setIsOpen(false);
+        } catch (err) {
+            console.error("Failed to save preferences:", err.response?.data || err);
+        }
+    };
+
+    const handleCancel = () => {
+        loadPreferences(); // Revert any unsaved changes
+        setIsOpen(false);
+    };
+
     const ActiveContent = SECTIONS[activeSection];
 
     if (!isOpen) {
         return (
             <>
-                <AppBackground />
-                <div style={{ position: "relative", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-                    <button onClick={() => setIsOpen(true)} style={{ ...saveBtnStyle, padding: "13px 32px", fontSize: 15 }}>Open Settings</button>
+                <Navbar onAvatarClick={() => setIsOpen(true)} />
+                <div className="relative z-10 flex items-center justify-center min-h-screen ">
+                    {/* <button
+                        onClick={() => setIsOpen(true)}
+                        className="py-[13px] px-8 text-[15px] font-medium text-white border-none rounded-xl bg-[#8a9a7b] cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.14)] transition-colors duration-150 tracking-[0.01em] hover:bg-[#7a8a6b]"
+                    >
+                        Open Settings
+                    </button> */}
                 </div>
             </>
         );
@@ -342,19 +384,20 @@ export default function SettingsModal() {
 
     return (
         <>
-            <AppBackground />
-            <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)", backdropFilter: "blur(2px)" }} onClick={() => setIsOpen(false)} />
+            <Navbar onAvatarClick={() => setIsOpen(true)} />
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div
+                    className="absolute inset-0 bg-black/15 backdrop-blur-[2px]"
+                    onClick={() => setIsOpen(false)}
+                />
 
                 {/* Modal — slightly taller to give content room */}
-                <div className="animate-in" style={{
-                    position: "relative", zIndex: 10, width: "100%", maxWidth: 1000, height: 650,
-                    backgroundColor: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)",
-                    borderRadius: 20, display: "flex", overflow: "hidden",
-                    boxShadow: "0 25px 60px -12px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.04)",
-                }}>
-                    <button onClick={() => setIsOpen(false)} style={{ position: "absolute", top: 20, right: 20, zIndex: 20, padding: 8, borderRadius: 8, border: "none", background: "none", cursor: "pointer", color: "#a8a29e" }}>
-                        <svg style={{ width: 20, height: 20 }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <div className="animate-in relative z-10 w-full max-w-[1000px] h-[650px] bg-white/95 backdrop-blur-[20px] rounded-[20px] flex overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)]">
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="absolute top-5 right-5 z-20 p-2 rounded-lg border-none bg-transparent cursor-pointer text-[#a8a29e] hover:bg-[#a8a29e]/10 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -362,8 +405,13 @@ export default function SettingsModal() {
                     <Sidebar activeSection={activeSection} onSelect={setActiveSection} onBack={() => setIsOpen(false)} />
 
                     {/* ── Content area: more padding on all sides ── */}
-                    <div style={{ flex: 1, padding: "40px 44px 36px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <ActiveContent />
+                    <div className="flex-1 pt-10 px-11 pb-9 overflow-hidden flex flex-col">
+                        <ActiveContent
+                            prefs={prefs}
+                            updateField={updateField}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                        />
                     </div>
                 </div>
             </div>

@@ -1,22 +1,13 @@
-import { supabase } from "../services/supabaseClient"
-
-const saveIntent = async () => {
-  const { data, error } = await supabase
-    .from("study_intents")
-    .insert([
-      {
-        title: "Learn Recursion",
-        description: "Understand base case and recursion tree",
-        clarity_score: 7
-      }
-    ])
-
-  if (error) console.log(error)
-  else console.log("Saved", data)
-}
+import React from 'react'
+import Navbar from '../components/Navbar'
 
 const Craft = () => {
-    saveIntent()
+  return (
+    <div>
+      <Navbar />
+      Clare
+    </div>
+  )
 }
 
-export default Craft;
+export default Craft
