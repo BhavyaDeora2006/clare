@@ -4,6 +4,12 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { supabase } from "./services/supabaseClient";
+import Craft from "./pages/Craft";
+import Learn from "./pages/Learn";
+import Ask from "./pages/Ask";
+import Refine from "./pages/Refine";
+import Echo from "./pages/Echo";
+
 
 function AppContent() {
   const navigate = useNavigate();
@@ -21,7 +27,10 @@ function AppContent() {
 
   return (
     <Routes>
+      {/* Public */}
       <Route path="/login" element={<Login />} />
+
+      {/* Protected */}
       <Route
         path="/dashboard"
         element={
@@ -30,8 +39,61 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-      {/* Redirect root to dashboard (which will redirect to login if no session) */}
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+      <Route
+        path="/craft"
+        element={
+          <ProtectedRoute>
+            <Craft />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/learn"
+        element={
+          <ProtectedRoute>
+            <Learn />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/ask"
+        element={
+          <ProtectedRoute>
+            <Ask />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/refine"
+        element={
+          <ProtectedRoute>
+            <Refine />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/echo"
+        element={
+          <ProtectedRoute>
+            <Echo />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Root */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
@@ -44,4 +106,6 @@ function App() {
   );
 }
 
+
 export default App;
+
