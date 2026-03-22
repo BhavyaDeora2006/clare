@@ -4,8 +4,8 @@ import Navbar from '../components/Navbar'
 const Craft = () => {
   return (
     <div>
-      <Navbar />
-      Clare
+        <Navbar />
+        Craft
     </div>
   )
 }

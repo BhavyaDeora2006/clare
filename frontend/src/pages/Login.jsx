@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-
-import { useNavigate } from 'react-router-dom';
 import { signIn, signUp, signInWithGoogle } from '../services/authServices';
 import background from '../assets/clare-light-bg.png';
 
@@ -11,8 +9,6 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-
-    const navigate = useNavigate();
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -27,18 +23,9 @@ const Login = () => {
             }
 
             if (result.error) {
-                if (result.error.message.includes('User already registered')) {
-                    setError('You already have an account. Redirecting to login...');
-                    setTimeout(() => {
-                        setIsSignIn(true);
-                        setError('');
-                    }, 2000);
-                } else {
-                    setError(result.error.message);
-                }
+                setError(result.error.message);
             } else {
-                // Successful login or signup
-                navigate('/dashboard');
+                console.log('Success:');
             }
         } catch (err) {
             setError('An unexpected error occurred. Please try again.');
@@ -50,14 +37,7 @@ const Login = () => {
     const handleGoogleSignIn = async () => {
         try {
             const { error } = await signInWithGoogle();
-            if (error) {
-                setError(error.message);
-            } else {
-                // Supabase handleGoogleSignIn redirects to provider, 
-                // but we need to ensure the redirect URL leads back to dashboard or home.
-                // Actually, OAuth flow is handled by Supabase, we just need to ensure 
-                // that when they come back, App.jsx handles the session.
-            }
+            if (error) setError(error.message);
         } catch (err) {
             setError('Google Sign In failed.');
         }
