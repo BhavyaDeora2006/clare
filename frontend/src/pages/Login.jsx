@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp, signInWithGoogle } from '../services/authServices';
-import background from '../assets/clare-light-bg.png';
+import background from '../assets/test-light-bg.png';
 
 const Login = () => {
     const [isSignIn, setIsSignIn] = useState(true);

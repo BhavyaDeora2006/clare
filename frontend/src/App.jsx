@@ -9,6 +9,7 @@ import Learn from "./pages/Learn";
 import Ask from "./pages/Ask";
 import Refine from "./pages/Refine";
 import Echo from "./pages/Echo";
+import Home from './pages/Home';
 
 
 function AppContent() {
@@ -28,6 +29,7 @@ function AppContent() {
   return (
     <Routes>
       {/* Public */}
+      <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
 
       {/* Protected */}
