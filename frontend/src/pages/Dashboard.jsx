@@ -132,7 +132,7 @@ const Sidebar = ({ activeSection, onSelect, onBack }) => {
             <div className="flex items-center gap-[14px] px-1.5 mb-9">
                 <div className="w-[50px] h-[50px] rounded-full shrink-0 bg-gradient-to-br from-[#c5cebf] to-[#8a9a7b] overflow-hidden shadow-[0_0_0_2px_#fff]">
                     <img
-                        src="https://imgs.search.brave.com/bT1Vn8WOO2oMVeeB7eIgRzqPtD7_U0zLN9bt0gIS5R4/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMDEv/NTAzLzc1Ni9zbWFs/bC9ib3ktZmFjZS1h/dmF0YXItY2FydG9v/bi1mcmVlLXZlY3Rv/ci5qcGc"
+                        src="https://assets.leetcode.com/users/Bhavya_Deora/avatar_1772714696.png"
                         alt="avatar"
                         className="w-full h-full object-cover rounded-full"
                     />
