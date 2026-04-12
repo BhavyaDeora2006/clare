@@ -228,7 +228,7 @@ return (
 
       </div>
 
-      {/* META */}
+      {/* META */}  
       <p className="text-sm text-[#78716c] mt-1">
         {quiz.totalQuestions} questions
         <span className="px-4 text-xs text-[#a8a29e]">

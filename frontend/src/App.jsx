@@ -19,7 +19,7 @@ function AppContent() {
     // Listen for auth state changes (e.g., Google OAuth redirect)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/refine');
+        navigate('/echo');
       }
     });
 
