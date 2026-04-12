@@ -4,6 +4,9 @@ import dotenv from "dotenv"
 import protectedRoutes from "./routes/protected.routes.js"
 import preferencesRoutes from "./routes/preferences.routes.js"
 import learningRoutes from "./routes/learning.routes.js";
+import echoRoutes from "./routes/echo.routes.js";
+import cardRoutes from "./routes/card.routes.js";
+import refineRoutes from "./routes/refine.routes.js";
 
 dotenv.config()
 
@@ -16,7 +19,9 @@ app.use(express.json())
 app.use("/api", protectedRoutes)
 app.use("/api", learningRoutes);
 app.use("/api/preferences", preferencesRoutes)
-
+app.use("/api/cards", cardRoutes);
+app.use("/api/echo", echoRoutes);
+app.use("/api/refine", refineRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

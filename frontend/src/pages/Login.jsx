@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import { useNavigate } from 'react-router-dom';
-=======
->>>>>>> origin/main
+
 import { signIn, signUp, signInWithGoogle } from '../services/authServices';
 import background from '../assets/test-light-bg.png';
 
