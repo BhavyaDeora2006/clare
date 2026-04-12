@@ -52,17 +52,10 @@ const Craft = ({ theme = 'light' }) => {
   };
 
   return (
-<<<<<<< HEAD
+
     <>
       <Navbar />
-=======
-    <div>
-        <Navbar />
-        Craft
-    </div>
-  )
-}
->>>>>>> origin/main
+
 
       {/* Background */}
       <div
