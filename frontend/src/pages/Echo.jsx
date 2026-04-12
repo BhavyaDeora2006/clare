@@ -32,6 +32,7 @@ const Echo = ({ theme = "light" }) => {
 
   const [editingDeck, setEditingDeck] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+  const [deletingDeckId, setDeletingDeckId] = useState(null);
   const MAX_TITLE_LENGTH = 40;
 
   // 🌱 Async Hooks
@@ -115,10 +116,18 @@ const Echo = ({ theme = "light" }) => {
     });
   };
 
-  const handleDeleteDeck = async (deckId) => {
-    await deleteDeck(deckId);
-    setDecks((prev) => prev.filter((d) => d.id !== deckId));
-  };
+  const handleDeleteDeck = async (id) => {
+  setDeletingDeckId(id);
+
+  try {
+    await deleteDeck(id);
+    setDecks((prev) => prev.filter((d) => d.id !== id));
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setDeletingDeckId(null);
+  }
+};
 
   return (
     <>
@@ -151,6 +160,7 @@ const Echo = ({ theme = "light" }) => {
                     setEditingDeck(deck);
                     setEditedTitle(deck.title);
                   }}
+                  deletingDeckId={deletingDeckId}
                   onDelete={handleDeleteDeck}
                   onCreateClick={() => setShowDeckModal(true)}
                   loading={creatingDeck}
@@ -166,7 +176,12 @@ const Echo = ({ theme = "light" }) => {
               </button>
 
               {loadingCards ? (
-                <p>Loading cards...</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+
+    {/* loader */}
+    <Loader size={50} />
+
+  </div>
               ) : (
                 <FlashcardView
                   deck={selectedDeck}
@@ -342,8 +357,21 @@ const Echo = ({ theme = "light" }) => {
 
       </div>
     </div>
+    
   </div>
 )}
+{deletingDeckId && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    
+    {/* soft blur background */}
+    <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
+
+    {/* loader */}
+    <Loader size={36} />
+
+  </div>
+)}
+
     </>
   );
 };

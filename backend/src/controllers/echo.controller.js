@@ -125,6 +125,12 @@ export const getDeckSession = async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
+    await supabase
+      .from("decks")
+      .update({ last_reviewed: new Date() })
+      .eq("id", deckId);
+
+    // 🧠 sorting logic
     const sorted = cards
       .map((card) => ({
         ...card,

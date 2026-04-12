@@ -8,6 +8,7 @@ const DeckGrid = ({
   onDelete,
   isDark,
   onCreateClick,
+  deletingDeckId,
   loading, // 🔥 from useAsyncAction
 }) => {
   return (
@@ -40,6 +41,7 @@ const DeckGrid = ({
 
             transition-all duration-200"
           >
+          {console.log(deck.lastReviewed)}
             {/* Title */}
             <h2 className="text-lg font-medium text-stone-800 truncate">
               {deck.title}
@@ -51,7 +53,12 @@ const DeckGrid = ({
             </p>
 
             <p className="text-xs text-[#a8a29e] mt-2">
-              Last reviewed {deck.lastReviewed || "-"}
+              Last reviewed {deck.lastReviewed ? new Date(deck.lastReviewed).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }) : '-'
+}
             </p>
 
             {/* =========================
@@ -82,7 +89,7 @@ const DeckGrid = ({
 
               {/* Delete */}
               <button
-              disabled={loading}
+              disabled={loading || deletingDeckId}
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(deck.id);
