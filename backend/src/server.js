@@ -7,7 +7,7 @@ import learningRoutes from "./routes/learning.routes.js";
 import echoRoutes from "./routes/echo.routes.js";
 import cardRoutes from "./routes/card.routes.js";
 import refineRoutes from "./routes/refine.routes.js";
-import askRoutes from "./src/routes/ask.routes.js";
+import askRoutes from "./routes/ask.routes.js";
 
 dotenv.config()
 
