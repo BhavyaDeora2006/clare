@@ -1,17 +1,28 @@
 // src/services/embedding.service.js
 
-import { groq } from "../config/groq.js";
+import { pipeline } from '@xenova/transformers';
+
+let extractor;
 
 export const generateEmbedding = async (text) => {
   try {
-    const response = await groq.embeddings.create({
-      model: "text-embedding-3-small",
-      input: text,
+    if (!extractor) {
+      console.log("Loading embedding model...");
+      extractor = await pipeline(
+        'feature-extraction',
+        'Xenova/all-MiniLM-L6-v2'
+      );
+      console.log("Model loaded.");
+    }
+
+    const output = await extractor(text, {
+      pooling: 'mean',
+      normalize: true,
     });
 
-    return response.data[0].embedding;
+    return Array.from(output.data);
   } catch (error) {
     console.error("Embedding Error:", error);
-    throw new Error("Failed to generate embedding");
+    throw error;
   }
 };

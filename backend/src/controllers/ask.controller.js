@@ -4,13 +4,13 @@ import { askQuestionService } from "../services/ask.service.js";
 
 export const askQuestion = async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, documentId } = req.body;
 
     if (!question) {
       return res.status(400).json({ error: "Question is required" });
     }
 
-    const result = await askQuestionService({ question });
+    const result = await askQuestionService({ question, documentId });
 
     return res.status(200).json(result);
   } catch (error) {
