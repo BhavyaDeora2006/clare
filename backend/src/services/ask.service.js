@@ -5,13 +5,13 @@ import { getRelevantChunks } from "./retrieval.service.js";
 import { buildAskPrompt } from "../prompts/askPrompt.js";
 import { groq } from "../config/groq.js";
 
-export const askQuestionService = async ({ question }) => {
+export const askQuestionService = async ({ question, documentId }) => {
   try {
     // 1. Generate embedding for question
     const queryEmbedding = await generateEmbedding(question);
 
     // 2. Retrieve relevant chunks
-    const chunks = await getRelevantChunks(queryEmbedding, 4);
+    const chunks = await getRelevantChunks(queryEmbedding,documentId, 4);
 
     // 3. Build prompt
     const prompt = buildAskPrompt(chunks, question);

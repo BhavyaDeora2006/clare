@@ -1,15 +1,4 @@
-// import { createRequire } from "module";
-
-// const require = createRequire(import.meta.url);
-// const pdfModule = require("pdf-parse");
-// const pdf = pdfModule.default;
-// // extract text
-// export const extractPdfText = async (buffer) => {
-//   const data = await pdf(buffer);
-//   return data.text;
-// };
-
-// smart cleaning
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 export const cleanText = (text) => {
   const cleaned = text
     .replace(/\n+/g, " ")
@@ -26,7 +15,6 @@ export const cleanText = (text) => {
     cleaned.slice(-chunk)
   );
 };
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 // extract text from PDF buffer
 export const extractPdfText = async (buffer) => {
@@ -50,4 +38,47 @@ export const extractPdfText = async (buffer) => {
     console.error("PDF EXTRACT ERROR:", err);
     throw err;
   }
+};
+
+
+
+export const splitTextIntoChunks = (text, chunkSize = 500) => {
+  const words = text.split(" ");
+  const chunks = [];
+
+  for (let i = 0; i < words.length; i += chunkSize) {
+    const chunkText = words.slice(i, i + chunkSize).join(" ");
+
+    chunks.push({
+      content: chunkText,
+      index: i / chunkSize,
+    });
+  }
+
+  return chunks;
+};
+
+export const processPdfForAsk = async (buffer) => {
+  const uint8Array = new Uint8Array(buffer);
+  const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+
+  const allChunks = [];
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+
+    const pageText = content.items.map(item => item.str).join(" ");
+
+    const chunks = splitTextIntoChunks(pageText);
+
+    chunks.forEach((chunk) => {
+      allChunks.push({
+        content: chunk.content,
+        page_number: pageNum,   // ✅ REAL PAGE
+      });
+    });
+  }
+
+  return allChunks;
 };
