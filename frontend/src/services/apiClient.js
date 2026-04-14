@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getSession } from './authServices';
-
+const BASE_URL = import.meta.env.VITE_BACKEND_URL
 const apiClient = axios.create({
-    baseURL: 'http://localhost:9000/api',
+    baseURL: `${BASE_URL}/api`,
 });
 
 // Add a request interceptor to attach the JWT token
