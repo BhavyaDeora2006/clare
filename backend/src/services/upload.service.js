@@ -40,7 +40,7 @@ export const uploadPdfService = async (buffer) => {
       document_id: doc.id,
       content: chunks[i].content,
       embedding,
-      page_number: Math.floor(i / 3) + 1, // temporary
+      page_number: chunks[i].page_number,
     });
   }
 
