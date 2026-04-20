@@ -1,7 +1,5 @@
 import apiClient from "./apiClient";
-import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 /**
  * Upload a PDF document to the backend for RAG processing.
@@ -12,8 +10,8 @@ export const uploadDocument = async (file) => {
   const formData = new FormData();
   formData.append("pdf", file);
 
-  const res = await axios.post(`${BASE_URL}/api/upload`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+  const res = await apiClient.post("/upload", formData, {
+  headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
 };

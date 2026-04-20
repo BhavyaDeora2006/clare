@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
-import { askQuestion, formatAiResponse } from "../services/askService";
+import { askQuestion, formatAiResponse, uploadDocument } from "../services/askService";
 import Navbar from "../components/Navbar";
 
 /* ──────────────────────── CONTEXT BAR ───────────────────── */
-const ContextBar = ({ documentName, pageCount }) => (
+const ContextBar = ({ documentName, pageCount , onUploadClick }) => (
   <div className="mx-8 mt-3 mb-1 rounded-2xl border border-stone-100 bg-white/70 px-7 py-3 flex items-center justify-between">
     <div className="flex items-center gap-2 text-sm text-stone-500">
       <span className="text-stone-400 font-light">Active Context:</span>
@@ -21,11 +21,11 @@ const ContextBar = ({ documentName, pageCount }) => (
     </div>
 
     <div className="flex items-center gap-6">
-      <button className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
+      <button onClick={onUploadClick} className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
         Change context
       </button>
       <span className="text-stone-200">|</span>
-      <button className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
+      <button onClick={onUploadClick} className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
         Upload new
       </button>
       <button className="p-1 text-stone-300 hover:text-stone-500 transition-colors cursor-pointer">
@@ -128,7 +128,37 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  const handleVoiceRecord = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support voice input. Try Chrome.");
+      return;
+    }
+
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInputValue((prev) => prev ? `${prev} ${transcript}` : transcript);
+    };
+    recognition.onerror = () => setIsRecording(false);
+    recognition.onend = () => setIsRecording(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+  };
 
   // Auto-scroll to latest message
   const scrollToBottom = () => {
@@ -193,7 +223,11 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
 
       <div className="border-t border-stone-100 p-5">
         <div className="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 border border-stone-150 shadow-sm focus-within:border-stone-300 transition-all">
-          <button className="p-1 text-stone-300 hover:text-stone-500 transition-colors cursor-pointer">
+          <button
+            onClick={handleVoiceRecord}
+            className={`p-1 transition-colors cursor-pointer ${isRecording ? "text-red-400 animate-pulse" : "text-stone-300 hover:text-stone-500"}`}
+            title={isRecording ? "Stop recording" : "Start voice input"}
+          >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
             </svg>
@@ -269,6 +303,22 @@ const ReferencePanel = ({ references }) => (
 const Ask = () => {
   const [references, setReferences] = useState([]);
   const [documentId, setDocumentId] = useState(null);
+  const [documentName, setDocumentName] = useState(null);
+  const [pageCount, setPageCount] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const data = await uploadDocument(file);
+      setDocumentId(data.documentId);
+      setDocumentName(file.name);
+      setPageCount(data.pageCount ?? "?");
+    } catch (err) {
+      console.error("Upload failed:", err);
+    }
+  };
 
   return (
     <div
@@ -278,7 +328,18 @@ const Ask = () => {
       }}
     >
       <Navbar />
-      <ContextBar documentName="Linked List Notes.pdf" pageCount={12} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={handleUpload}
+      />
+      <ContextBar
+        documentName={documentName}
+        pageCount={pageCount}
+        onUploadClick={() => fileInputRef.current?.click()}
+      />
       <main className="flex-1 overflow-hidden">
         <div className="max-w-6xl mx-auto flex gap-5 px-8 py-5 h-full">
           <div className="flex-[2.2] min-w-0">
