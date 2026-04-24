@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getPreferences, updatePreferences } from "../services/preferencesService";
 import Navbar from "../components/Navbar";
 
@@ -315,7 +316,8 @@ const defaultPrefs = {
 };
 
 export default function SettingsModal() {
-    const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
+    const [isOpen, setIsOpen] = useState(true);
     const [activeSection, setActiveSection] = useState("study");
 
     // Single source of truth for all preferences
@@ -349,11 +351,16 @@ export default function SettingsModal() {
         setPrefs(prev => ({ ...prev, [key]: value }));
     };
 
+    const closeDashboard = () => {
+        setIsOpen(false);
+        navigate(-1);
+    };
+
     const handleSave = async () => {
         try {
             await updatePreferences(prefs);
             console.log("Successfully saved preferences");
-            setIsOpen(false);
+            closeDashboard();
         } catch (err) {
             console.error("Failed to save preferences:", err.response?.data || err);
         }
@@ -361,7 +368,7 @@ export default function SettingsModal() {
 
     const handleCancel = () => {
         loadPreferences(); // Revert any unsaved changes
-        setIsOpen(false);
+        closeDashboard();
     };
 
     const ActiveContent = SECTIONS[activeSection];
@@ -371,12 +378,6 @@ export default function SettingsModal() {
             <>
                 <Navbar onAvatarClick={() => setIsOpen(true)} />
                 <div className="relative z-10 flex items-center justify-center min-h-screen ">
-                    {/* <button
-                        onClick={() => setIsOpen(true)}
-                        className="py-[13px] px-8 text-[15px] font-medium text-white border-none rounded-xl bg-[#8a9a7b] cursor-pointer shadow-[0_1px_4px_rgba(0,0,0,0.14)] transition-colors duration-150 tracking-[0.01em] hover:bg-[#7a8a6b]"
-                    >
-                        Open Settings
-                    </button> */}
                 </div>
             </>
         );
@@ -388,13 +389,13 @@ export default function SettingsModal() {
             <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div
                     className="absolute inset-0 bg-black/15 backdrop-blur-[2px]"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeDashboard}
                 />
 
                 {/* Modal — slightly taller to give content room */}
                 <div className="animate-in relative z-10 w-full max-w-[1000px] h-[650px] bg-white/95 backdrop-blur-[20px] rounded-[20px] flex overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)]">
                     <button
-                        onClick={() => setIsOpen(false)}
+                        onClick={closeDashboard}
                         className="absolute top-5 right-5 z-20 p-2 rounded-lg border-none bg-transparent cursor-pointer text-[#a8a29e] hover:bg-[#a8a29e]/10 transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -402,7 +403,7 @@ export default function SettingsModal() {
                         </svg>
                     </button>
 
-                    <Sidebar activeSection={activeSection} onSelect={setActiveSection} onBack={() => setIsOpen(false)} />
+                    <Sidebar activeSection={activeSection} onSelect={setActiveSection} onBack={closeDashboard} />
 
                     {/* ── Content area: more padding on all sides ── */}
                     <div className="flex-1 pt-10 px-11 pb-9 overflow-hidden flex flex-col">

@@ -21,11 +21,9 @@ const Navbar = ({ onAvatarClick }) => {
   ">
             {/* Logo */}
             <div
-                onClick={() => navigate("/dashboard")}
                 className="
           text-[22px] font-light tracking-[0.25em]
           text-[#78716c]
-          cursor-pointer
         "
             >
                 CLARE
@@ -59,11 +57,8 @@ const Navbar = ({ onAvatarClick }) => {
 
             {/* Avatar */}
             <div
-                onClick={onAvatarClick || undefined}
-                className={`
-          w-9 h-9 rounded-full overflow-hidden
-          ${onAvatarClick ? "cursor-pointer" : "opacity-80"}
-        `}
+                onClick={onAvatarClick || (() => navigate("/dashboard"))}
+                className="w-9 h-9 rounded-full overflow-hidden cursor-pointer"
             >
                 <img
                     src="https://assets.leetcode.com/users/Bhavya_Deora/avatar_1772714696.png"
