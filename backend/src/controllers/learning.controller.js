@@ -124,3 +124,110 @@ try {
     });
   }
 };
+
+export const getLearningPath = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("learning_paths")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user_id)
+      .single();
+
+    if (error) throw error;
+
+    return res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch learning path" });
+  }
+};
+
+export const updateProgress = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { id } = req.params;
+    const { topicId, chapterId } = req.body;
+
+    const { data, error } = await supabase
+      .from("learning_paths")
+      .update({
+        current_topic_id: topicId,
+        current_chapter_id: chapterId,
+      })
+      .eq("id", id)
+      .eq("user_id", user_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update progress" });
+  }
+};
+
+export const toggleTopicCompletion = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+    const { id } = req.params;
+    const { topicId } = req.body;
+if (!topicId) {
+  return res.status(400).json({ error: "topicId required" });
+}
+    const { data, error } = await supabase
+      .from("learning_paths")
+      .select("structure")
+      .eq("id", id)
+      .eq("user_id", user_id)
+      .single();
+
+    if (error) throw error;
+
+    let structure = data.structure;
+
+    // 🔁 toggle completion
+    structure.chapters.forEach((ch) => {
+      ch.topics.forEach((t) => {
+        if (t.id === topicId) {
+          t.completed = !t.completed;
+        }
+      });
+    });
+
+    // 🧠 calculate progress
+    const totalTopics = structure.chapters.reduce(
+      (acc, ch) => acc + ch.topics.length,
+      0
+    );
+
+    const completedTopics = structure.chapters.reduce(
+      (acc, ch) =>
+        acc + ch.topics.filter((t) => t.completed).length,
+      0
+    );
+
+    const progress = Math.round((completedTopics / totalTopics) * 100);
+
+    // 💾 update DB
+    const { error: updateError } = await supabase
+      .from("learning_paths")
+      .update({ structure, progress })   // 🔥 THIS LINE FIXES IT
+      .eq("id", id)
+      .eq("user_id", user_id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    res.json({ success: true, structure, progress });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Toggle failed" });
+  }
+};

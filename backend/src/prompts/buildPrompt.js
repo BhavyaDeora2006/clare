@@ -32,7 +32,11 @@ Format:
   "content": {
     "t1": {
       "title": "Topic title",
-      "explanation": "Explain clearly in 4-6 lines",
+      "flow": [
+  "Explain step 1 clearly",
+  "Explain step 2 clearly",
+  "Explain step 3 clearly"
+],
       "example": "Simple example if relevant",
       "key_points": ["point1", "point2"]
     }
@@ -44,7 +48,7 @@ Rules:
 - Each chapter 2-3 topics
 - Provide content for EVERY topic
 - Keep explanations beginner-friendly but meaningful
-
+- explanation must be split into 3-5 short lines inside "flow"
 User intent:
 "${intent}"
 `;
