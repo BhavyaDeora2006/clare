@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { askQuestion, formatAiResponse, uploadDocument } from "../services/askService";
 import Navbar from "../components/Navbar";
+import { usePreferences } from "../context/PreferencesContext";
+import bgImage from "../assets/test-light-bg.png";
 
 /* ──────────────────────── CONTEXT BAR ───────────────────── */
-const ContextBar = ({ documentName, pageCount , onUploadClick }) => (
+const ContextBar = ({ documentName, pageCount, onUploadClick }) => (
   <div className="mx-8 mt-3 mb-1 rounded-2xl border border-stone-100 bg-white/70 px-7 py-3 flex items-center justify-between">
     <div className="flex items-center gap-2 text-sm text-stone-500">
       <span className="text-stone-400 font-light">Active Context:</span>
@@ -42,13 +44,12 @@ const TypingIndicator = () => (
   <div className="flex justify-center">
     <div className="w-full max-w-2xl">
       <div
-        className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm"
-        style={{ fontFamily: "'Georgia', serif" }}
+        className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm font-serif"
       >
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:300ms]" />
           <span className="ml-2 text-xs text-stone-400 font-light">Thinking...</span>
         </div>
       </div>
@@ -65,7 +66,7 @@ const EmptyState = () => (
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
         </svg>
       </div>
-      <h3 className="text-lg font-light text-stone-500 mb-2" style={{ fontFamily: "'Georgia', serif" }}>
+      <h3 className="text-lg font-light text-stone-500 mb-2 font-serif">
         Ask anything about your material
       </h3>
       <p className="text-sm text-stone-400 font-light leading-relaxed">
@@ -89,8 +90,7 @@ const MessageBubble = ({ message }) => {
           />
         </div>
         <div
-          className="px-5 py-3 bg-stone-50 border border-stone-100 rounded-2xl rounded-tl-sm text-sm text-stone-600 leading-relaxed max-w-lg"
-          style={{ fontFamily: "'Georgia', serif" }}
+          className="px-5 py-3 bg-stone-50 border border-stone-100 rounded-2xl rounded-tl-sm text-sm text-stone-600 leading-relaxed max-w-lg font-serif"
         >
           {message.content}
         </div>
@@ -103,8 +103,7 @@ const MessageBubble = ({ message }) => {
     <div className="flex justify-center">
       <div className="w-full max-w-2xl">
         <div
-          className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm"
-          style={{ fontFamily: "'Georgia', serif" }}
+          className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm font-serif"
         >
           <p className="text-sm text-stone-600 leading-relaxed mb-4 whitespace-pre-wrap">{message.content}</p>
           {message.steps && (
@@ -239,8 +238,7 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            className="flex-1 bg-transparent text-sm text-stone-600 placeholder:text-stone-300 outline-none disabled:opacity-50"
-            style={{ fontFamily: "'Georgia', serif" }}
+            className="flex-1 bg-transparent text-sm text-stone-600 placeholder:text-stone-300 outline-none disabled:opacity-50 font-serif"
           />
           <button
             onClick={handleSend}
@@ -259,14 +257,12 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
 const ReferenceCard = ({ reference }) => (
   <div className="p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md hover:border-stone-200 transition-all duration-200 cursor-pointer">
     <h4
-      className="text-sm font-medium text-stone-600 mb-2"
-      style={{ fontFamily: "'Georgia', serif" }}
+      className="text-sm font-medium text-stone-600 mb-2 font-serif"
     >
       {reference.title}
     </h4>
     <p
-      className="text-xs text-stone-400 leading-relaxed line-clamp-3"
-      style={{ fontFamily: "'Georgia', serif" }}
+      className="text-xs text-stone-400 leading-relaxed line-clamp-3 font-serif"
     >
       {reference.description}
     </p>
@@ -277,8 +273,7 @@ const ReferencePanel = ({ references }) => (
   <div className="flex flex-col h-full bg-white/60 rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
     <div className="px-6 py-5">
       <h3
-        className="text-base font-light text-stone-500 tracking-wide"
-        style={{ fontFamily: "'Georgia', serif" }}
+        className="text-base font-light text-stone-500 tracking-wide font-serif"
       >
         From your material
       </h3>
@@ -301,6 +296,8 @@ const ReferencePanel = ({ references }) => (
 
 /* ═══════════════════════ ASK PAGE ═════════════════════ */
 const Ask = () => {
+  const { prefs } = usePreferences();
+  const isDark = prefs.theme === "dark";
   const [references, setReferences] = useState([]);
   const [documentId, setDocumentId] = useState(null);
   const [documentName, setDocumentName] = useState(null);
@@ -321,13 +318,18 @@ const Ask = () => {
   };
 
   return (
-    <div
-      className="flex flex-col h-screen font-sans"
-      style={{
-        background: "linear-gradient(135deg, #f5f4f2 0%, #edecea 40%, #e8e6e3 100%)",
-      }}
-    >
-      <Navbar />
+    <div className="flex flex-col h-screen font-sans relative">
+      <div
+        className="fixed inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-colors duration-500"
+        style={{
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(28,25,23,0.88), rgba(28,25,23,0.88)), url(${bgImage})`
+            : `url(${bgImage})`,
+        }}
+      />
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-colors duration-500 ${isDark ? 'bg-gradient-to-br from-black/20 via-transparent to-black/40' : 'bg-gradient-to-br from-white/20 via-transparent to-black/5'}`} />
+      <div className="relative z-10 flex flex-col h-full">
+        <Navbar />
       <input
         ref={fileInputRef}
         type="file"
@@ -350,6 +352,7 @@ const Ask = () => {
           </div>
         </div>
       </main>
+    </div>
     </div>
   );
 };
