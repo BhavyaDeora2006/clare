@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { signIn, signUp, signInWithGoogle } from '../services/authServices';
+import { signIn, signUp, signInWithGoogle, resetPassword } from '../services/authServices';
 import background from '../assets/test-light-bg.png';
 
 const Login = () => {
@@ -9,6 +9,29 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showForgot, setShowForgot] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetSent, setResetSent] = useState(false);
+    const [resetLoading, setResetLoading] = useState(false);
+    const [resetError, setResetError] = useState('');
+
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        setResetError('');
+        setResetLoading(true);
+        try {
+            const { error } = await resetPassword(resetEmail);
+            if (error) {
+                setResetError(error.message);
+            } else {
+                setResetSent(true);
+            }
+        } catch (err) {
+            setResetError('An unexpected error occurred.');
+        } finally {
+            setResetLoading(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -116,7 +139,7 @@ const Login = () => {
                                         Password
                                     </label>
                                     {isSignIn && (
-                                        <button type="button" className="text-[10px] text-gray-400 hover:text-sage-500 transition-colors uppercase tracking-[0.05em] font-semibold">
+                                        <button type="button" onClick={() => { setShowForgot(true); setResetEmail(email); setResetSent(false); setResetError(''); }} className="text-[10px] text-gray-400 hover:text-sage-500 transition-colors uppercase tracking-[0.05em] font-semibold bg-transparent border-none cursor-pointer">
                                             Forgot password?
                                         </button>
                                     )}
@@ -193,6 +216,73 @@ const Login = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Forgot Password Overlay */}
+            {showForgot && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" onClick={() => setShowForgot(false)} />
+                    <div className="relative z-10 w-full max-w-[440px] mx-6 bg-white/90 backdrop-blur-xl rounded-[2rem] py-12 px-10 shadow-[0_25px_60px_rgba(0,0,0,0.12)] border border-white/40">
+                        <button
+                            onClick={() => setShowForgot(false)}
+                            className="absolute top-5 right-5 p-2 rounded-lg border-none bg-transparent cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100/50 transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        {!resetSent ? (
+                            <>
+                                <h2 className="text-[26px] font-serif text-[#1c1917] mb-3 tracking-wide">Reset password</h2>
+                                <p className="text-[13px] text-gray-400 leading-relaxed mb-8">
+                                    Enter your email and we'll send you a link to reset your password.
+                                </p>
+                                <form onSubmit={handleForgotPassword} className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="block text-[11px] font-bold uppercase tracking-[0.1em] text-gray-400 ml-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            value={resetEmail}
+                                            onChange={(e) => setResetEmail(e.target.value)}
+                                            placeholder="name@example.com"
+                                            className="w-full px-5 py-4 rounded-xl bg-white/50 border border-gray-100 focus:border-sage-500 focus:ring-1 focus:ring-sage-500/20 focus:bg-white outline-none transition-all duration-300 text-charcoal placeholder-gray-300 shadow-sm"
+                                            required
+                                            autoFocus
+                                        />
+                                    </div>
+                                    {resetError && <p className="text-red-400 text-xs font-medium text-center">{resetError}</p>}
+                                    <button
+                                        type="submit"
+                                        disabled={resetLoading}
+                                        className="w-full bg-sage-500 hover:bg-sage-600 text-white font-semibold py-4 rounded-xl shadow-[0_10px_25px_-5px_rgba(107,143,122,0.3)] transition-all duration-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed relative overflow-hidden border-none cursor-pointer"
+                                    >
+                                        <span className="relative flex items-center justify-center">
+                                            {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                                        </span>
+                                    </button>
+                                </form>
+                            </>
+                        ) : (
+                            <div className="text-center py-4">
+                                <div className="w-14 h-14 bg-[#f4f6f1] rounded-full flex items-center justify-center mx-auto mb-5">
+                                    <svg className="w-7 h-7 text-[#8a9a7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-[20px] font-serif text-[#1c1917] mb-2">Check your email</h3>
+                                <p className="text-[13px] text-gray-400 mb-1">We've sent a reset link to</p>
+                                <p className="text-[13px] font-semibold text-[#1c1917] mb-6">{resetEmail}</p>
+                                <button
+                                    onClick={() => setShowForgot(false)}
+                                    className="text-[12px] text-[#8a9a7b] hover:text-[#6b7d5e] font-medium bg-transparent border-none cursor-pointer transition-colors"
+                                >
+                                    ← Back to login
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

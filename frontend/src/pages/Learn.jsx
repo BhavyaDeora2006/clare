@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Loader from '../components/Loader';
+import { fetchAllPaths, toggleTopic, updatePathProgress } from '../services/learningService';
+import { usePreferences } from '../context/PreferencesContext';
+import bgImage from "../assets/test-light-bg.png";
 
 /* ═══════════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS — injected via <style> tag
@@ -98,144 +103,134 @@ const AnimationStyles = () => (
 );
 
 /* ═══════════════════════════════════════════════════════════
-   DEFAULT COURSE DATA
+   TRANSFORM BACKEND → LEARN UI FORMAT
    ═══════════════════════════════════════════════════════════ */
-const defaultCourseData = {
-  moduleName: "Components & State",
-  moduleDescription: "Understanding how UI is built and remembered",
-  currentPosition: "Learning the mental model behind component state.",
-  chapters: [
-    {
-      id: "ch1",
-      title: "Chapter 1: Foundations",
-      lessons: [
-        {
-          id: "l1-1", title: "Introduction", status: "completed",
-          flow: [
-            "React is a JavaScript library for building user interfaces.",
-            "It was created at Facebook and released as open source in 2013.",
-            "React introduces a component-based architecture for the web.",
-            "Components are the building blocks of any React application.",
-            "Each component is a self-contained piece of UI logic.",
-            "React uses JSX, a syntax extension that looks like HTML.",
-            "JSX makes it intuitive to describe what the UI should look like.",
-            "Under the hood, JSX compiles to regular JavaScript function calls.",
-            "This foundation is key to understanding everything that follows."
-          ]
-        },
-        {
-          id: "l1-2", title: "Core Idea", status: "completed",
-          flow: [
-            "The core idea of React is declarative rendering.",
-            "You describe what the UI should look like, not how to update it.",
-            "React takes care of efficiently updating the DOM for you.",
-            "This is achieved through the Virtual DOM diffing algorithm.",
-            "When state changes, React creates a new virtual tree.",
-            "It compares the new tree with the previous one.",
-            "Only the differences are applied to the real DOM.",
-            "This makes updates fast and predictable.",
-            "Declarative code is easier to reason about and debug."
-          ]
-        },
-        {
-          id: "l1-3", title: "Visual Walkthrough", status: "locked",
-          flow: [
-            "Let's walk through a visual example of React rendering.",
-            "Imagine a simple counter component on the screen.",
-            "When you click the button, the count state updates.",
-            "React re-renders the component with the new count value.",
-            "Only the text showing the count changes in the real DOM.",
-            "The button and surrounding elements remain untouched.",
-            "This selective updating is what makes React performant.",
-            "The developer never manually touches the DOM.",
-            "React handles all the complexity behind the scenes."
-          ]
-        }
-      ]
-    },
-    {
-      id: "ch2",
-      title: "Chapter 2: Components & State",
-      lessons: [
-        {
-          id: "l2-1", title: "Why Components Matter", status: "completed",
-          flow: [
-            "Components allow you to split the UI into independent pieces.",
-            "Each piece can be developed, tested, and reused in isolation.",
-            "Think of components like LEGO blocks for your interface.",
-            "A button, a card, a navigation bar — each can be a component.",
-            "Components accept inputs called props and return JSX.",
-            "Props flow downward from parent to child components.",
-            "This creates a predictable, one-way data flow.",
-            "Composing small components creates complex interfaces.",
-            "Component reusability dramatically speeds up development."
-          ]
-        },
-        {
-          id: "l2-2", title: "State vs Props", status: "in-progress",
-          flow: [
-            "State is internal memory of a component.",
-            "Props are external data passed from a parent component.",
-            "State can be changed by the component that owns it.",
-            "Props are read-only and cannot be modified by the child.",
-            "When state changes, the component re-renders automatically.",
-            "Update state with the state-setting function from useState.",
-            "Never mutate state directly — always use the setter function.",
-            "Props and state together determine what a component displays.",
-            "Understanding this distinction is crucial for React mastery."
-          ]
-        },
-        {
-          id: "l2-3", title: "Mental Model", status: "locked",
-          flow: [
-            "Think of a component as a function that returns UI.",
-            "State is like a variable that persists between renders.",
-            "Each render is a snapshot of the UI at a point in time.",
-            "React calls your component function on every state change.",
-            "The function runs fresh each time with updated state values.",
-            "Event handlers capture the state from the render they belong to.",
-            "This mental model helps avoid common React bugs.",
-            "State is not shared between instances of the same component.",
-            "Each component instance maintains its own independent state."
-          ]
-        },
-        {
-          id: "l2-4", title: "Common Pitfalls", status: "locked",
-          flow: [
-            "A common mistake is mutating state objects directly.",
-            "Always create new objects or arrays when updating state.",
-            "Another pitfall is using stale state in event handlers.",
-            "Use functional updates when new state depends on previous state.",
-            "Avoid putting derived values in state — compute them during render.",
-            "Don't call setState inside the render phase of a component.",
-            "Be careful with objects and arrays — they need immutable updates.",
-            "Use the React DevTools to inspect state changes visually.",
-            "Practice these patterns until they become second nature."
-          ]
-        }
-      ],
-    },
-    {
-      id: "ch3",
-      title: "Chapter 3: Side Effects",
-      lessons: [
-        {
-          id: "l3-1", title: "When Effects Are Needed", status: "locked",
-          flow: [
-            "Side effects are operations that reach outside your component.",
-            "Fetching data, setting up subscriptions, and modifying the DOM.",
-            "These cannot be done during rendering — they need useEffect.",
-            "useEffect runs after the component renders to the screen.",
-            "You can specify dependencies to control when it re-runs.",
-            "An empty dependency array means the effect runs only once.",
-            "Return a cleanup function to prevent memory leaks.",
-            "Effects let you synchronize with external systems.",
-            "Understanding effects is key to building real-world apps."
-          ]
-        }
-      ]
-    }
-  ]
+const transformPathToLearnData = (path) => {
+  const { structure, content, current_topic_id, title, intent } = path;
+  const chapters = (structure?.chapters || []).map(ch => ({
+    id: ch.id,
+    title: ch.title,
+    lessons: (ch.topics || []).map(topic => {
+      let status;
+      if (topic.completed) status = 'completed';
+      else if (topic.id === current_topic_id) status = 'in-progress';
+      else status = 'locked';
+      const tc = content?.[topic.id] || {};
+      return {
+        id: topic.id,
+        title: topic.title || tc.title || 'Untitled',
+        status,
+        flow: tc.flow || [],
+        example: tc.example || '',
+        key_points: tc.key_points || [],
+      };
+    })
+  }));
+  let currentPosition = '';
+  for (const ch of chapters) {
+    const ip = ch.lessons.find(l => l.status === 'in-progress');
+    if (ip) { currentPosition = `${ch.title} › ${ip.title}`; break; }
+  }
+  return {
+    moduleName: title || 'Learning Path',
+    moduleDescription: intent || '',
+    currentPosition: currentPosition || 'All topics completed!',
+    chapters,
+  };
+};
+
+/* ═══════════════════════════════════════════════════════════
+   SKELETON LOADER
+   ═══════════════════════════════════════════════════════════ */
+const Shimmer = ({ className }) => (
+  <div className={`animate-pulse bg-[#e4e4e0] rounded ${className}`} />
+);
+
+const LearnSkeleton = () => (
+  <div className="flex-1 flex gap-7 max-w-[1280px] w-full mx-auto px-9 py-7 items-start">
+    <div className="flex-[0_0_42%] flex flex-col gap-6">
+      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7">
+        <Shimmer className="h-4 w-32 mb-4" />
+        <Shimmer className="h-6 w-48 mb-3" />
+        <Shimmer className="h-3 w-64 mb-3" />
+        <Shimmer className="h-3 w-40" />
+      </div>
+      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7">
+        <div className="flex items-baseline justify-between mb-3">
+          <Shimmer className="h-5 w-32" /><Shimmer className="h-4 w-20" />
+        </div>
+        <Shimmer className="h-[4px] w-full mb-7" />
+        {[1, 2, 3].map(i => (
+          <div key={i} className="mb-5">
+            <div className="flex items-center gap-3 mb-3">
+              <Shimmer className="h-5 w-5 rounded-full" />
+              <Shimmer className="h-4 w-40" />
+            </div>
+            <div className="pl-8 flex flex-col gap-2">
+              <Shimmer className="h-8 w-full rounded-lg" />
+              <Shimmer className="h-8 w-full rounded-lg" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div className="flex-1 flex flex-col gap-5">
+      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden">
+        <div className="px-7 pt-6"><Shimmer className="h-5 w-40 mb-2" /><Shimmer className="h-3 w-24" /></div>
+        <div className="bg-[#fafaf8] mx-5 my-4 rounded-xl border border-[#eeede9] px-7 py-6 min-h-[200px] flex flex-col gap-3">
+          <Shimmer className="h-4 w-full" /><Shimmer className="h-4 w-3/4" /><Shimmer className="h-4 w-5/6" />
+        </div>
+        <div className="px-7 pb-6 pt-4 flex items-center gap-4">
+          <Shimmer className="h-9 w-9 rounded-full" /><Shimmer className="h-[4px] flex-1" /><Shimmer className="h-4 w-20" />
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] py-5 px-6">
+        <Shimmer className="h-5 w-24 mb-4" />
+        <Shimmer className="h-10 w-full rounded-lg mb-2" />
+        <Shimmer className="h-10 w-full rounded-lg" />
+      </div>
+    </div>
+  </div>
+);
+
+/* ═══════════════════════════════════════════════════════════
+   PATH SELECTOR — multiple learning paths
+   ═══════════════════════════════════════════════════════════ */
+const PathSelector = ({ paths, selectedId, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selected = paths.find(p => p.id === selectedId);
+  if (paths.length <= 1) return null;
+  return (
+    <div className="relative mb-4">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-5 py-3 cursor-pointer border-none text-left transition-colors hover:bg-[#fafaf8]"
+      >
+        <div>
+          <span className="text-[11px] text-[#aaa] uppercase tracking-[0.08em] font-medium">Active path</span>
+          <p className="text-[14px] font-semibold text-[#1a1a1a] m-0 mt-0.5">{selected?.title || 'Select a path'}</p>
+        </div>
+        <svg className={`w-4 h-4 text-[#aaa] transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-[#eee] z-20 overflow-hidden">
+          {paths.map(p => (
+            <button
+              key={p.id}
+              onClick={() => { onSelect(p.id); setIsOpen(false); }}
+              className={`w-full text-left px-5 py-3 border-none cursor-pointer transition-colors text-[13px] ${p.id === selectedId ? 'bg-[#eef8f2] text-[#2a7d52] font-medium' : 'bg-white text-[#555] hover:bg-[#fafaf8]'
+                }`}
+            >
+              <p className="m-0 font-medium">{p.title}</p>
+              <p className="m-0 text-[11px] text-[#aaa] mt-0.5">{p.progress}% complete</p>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -770,12 +765,11 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
             <div
               key={`${slideIdx}-${i}`}
               className={[
-                'animate-fade-slide-up mb-3 last:mb-0',
+                'animate-fade-slide-up mb-3 last:mb-0 [animation-delay:0s]',
                 isFullscreen
                   ? 'text-[22px] text-[#2a2a2a] leading-[2]'
                   : 'text-[15px] text-[#3a3a3a] leading-[1.75]',
               ].join(' ')}
-              style={{ animationDelay: '0s' }}
             >
               {sentence}
             </div>
@@ -966,107 +960,213 @@ const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
 /* ═══════════════════════════════════════════════════════════
    LEARN PAGE — MAIN COMPONENT
    ═══════════════════════════════════════════════════════════ */
-const Learn = ({ courseData: propCourseData }) => {
-  const data = propCourseData || defaultCourseData;
+const Learn = () => {
+  const { prefs } = usePreferences();
+  const isDark = prefs.theme === 'dark';
+  const navigate = useNavigate();
 
-  const [chapters, setChapters] = useState(() =>
-    JSON.parse(JSON.stringify(data.chapters))
-  );
+  /* ── Fetch state ── */
+  const [paths, setPaths] = useState([]);
+  const [selectedPathId, setSelectedPathId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const findInitialLesson = () => {
-    for (const ch of chapters) {
-      for (const l of ch.lessons) { if (l.status === 'in-progress') return l; }
+  /* ── Lesson state ── */
+  const [data, setData] = useState(null);
+  const [chapters, setChapters] = useState([]);
+  const [activeLesson, setActiveLesson] = useState(null);
+  const [playerProgress, setPlayerProgress] = useState({ globalIdx: 0, currentSentence: '' });
+  const [rawPath, setRawPath] = useState(null);
+
+  /* ── Fetch all paths on mount ── */
+  const loadPaths = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const allPaths = await fetchAllPaths();
+      setPaths(allPaths);
+      if (allPaths.length > 0 && !selectedPathId) {
+        const active = allPaths.find(p => p.progress < 100) || allPaths[0];
+        setSelectedPathId(active.id);
+      }
+    } catch (err) {
+      console.error('Failed to load paths:', err);
+      setError('Could not load your learning paths. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
     }
-    for (const ch of chapters) {
-      for (const l of ch.lessons) { if (l.status !== 'locked') return l; }
-    }
-    return null;
   };
 
-  const [activeLesson, setActiveLesson] = useState(findInitialLesson);
-  const [playerProgress, setPlayerProgress] = useState({ globalIdx: 0, currentSentence: '' });
+  useEffect(() => { loadPaths(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* ── When selectedPathId changes, transform and set data ── */
+  useEffect(() => {
+    if (!selectedPathId || paths.length === 0) return;
+    const path = paths.find(p => p.id === selectedPathId);
+    if (!path) return;
+
+    setRawPath(path);
+    const transformed = transformPathToLearnData(path);
+    setData(transformed);
+    const cloned = JSON.parse(JSON.stringify(transformed.chapters));
+    setChapters(cloned);
+
+    const allL = cloned.flatMap(ch => ch.lessons);
+    const ip = allL.find(l => l.status === 'in-progress');
+    const first = allL.find(l => l.status !== 'locked');
+    setActiveLesson(ip || first || null);
+    setPlayerProgress({ globalIdx: 0, currentSentence: '' });
+  }, [selectedPathId, paths]);
+
+  /* ── Derived values ── */
   const allLessons = chapters.flatMap(ch => ch.lessons);
   const completedCount = allLessons.filter(l => l.status === 'completed').length;
-  const progress = Math.round((completedCount / allLessons.length) * 100);
+  const progress = allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0;
 
-  const findNextLesson = (currentId) => {
+  const liveActiveLesson = activeLesson
+    ? allLessons.find(l => l.id === activeLesson.id) || activeLesson
+    : null;
+
+  /* ── Handle lesson completion ── */
+  const handleLessonComplete = async (lessonId) => {
     const flat = chapters.flatMap(ch => ch.lessons);
-    const idx = flat.findIndex(l => l.id === currentId);
-    for (let i = idx + 1; i < flat.length; i++) {
-      if (flat[i].status !== 'completed') return flat[i];
-    }
-    return null;
-  };
+    const idx = flat.findIndex(l => l.id === lessonId);
+    const nextLesson = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
 
-  const handleLessonComplete = (lessonId) => {
+    // Optimistic local update
     setChapters(prev => {
       const updated = JSON.parse(JSON.stringify(prev));
       for (const ch of updated)
         for (const l of ch.lessons)
           if (l.id === lessonId) l.status = 'completed';
-      const flat = updated.flatMap(ch => ch.lessons);
-      const idx = flat.findIndex(l => l.id === lessonId);
-      if (idx >= 0 && idx < flat.length - 1) {
-        const next = flat[idx + 1];
-        if (next.status === 'locked')
-          for (const ch of updated)
-            for (const l of ch.lessons)
-              if (l.id === next.id) l.status = 'in-progress';
+      if (nextLesson) {
+        for (const ch of updated)
+          for (const l of ch.lessons)
+            if (l.id === nextLesson.id && l.status === 'locked')
+              l.status = 'in-progress';
       }
       return updated;
     });
+
+    // Backend sync
+    if (rawPath) {
+      try {
+        await toggleTopic(rawPath.id, lessonId);
+        if (nextLesson) {
+          let nextChId = null;
+          for (const ch of rawPath.structure?.chapters || []) {
+            if ((ch.topics || []).some(t => t.id === nextLesson.id)) {
+              nextChId = ch.id; break;
+            }
+          }
+          if (nextChId) await updatePathProgress(rawPath.id, nextLesson.id, nextChId);
+        }
+        // Silently refresh path list
+        const fresh = await fetchAllPaths();
+        setPaths(fresh);
+      } catch (err) {
+        console.error('Failed to sync progress:', err);
+      }
+    }
+
+    // Navigate to next after completion animation
     setTimeout(() => {
-      const next = findNextLesson(lessonId);
-      if (next) setActiveLesson(next);
+      if (nextLesson) setActiveLesson(nextLesson);
     }, 2500);
   };
 
-  const liveActiveLesson = activeLesson
-    ? chapters.flatMap(ch => ch.lessons).find(l => l.id === activeLesson.id) || activeLesson
-    : null;
-
+  /* ── Render ── */
   return (
-    /* learn-page */
-    <div className="bg-[#f0f0ec] min-h-screen flex flex-col font-['Inter',system-ui,-apple-system,sans-serif]">
+    <div
+      className="min-h-screen flex flex-col font-['Inter',system-ui,-apple-system,sans-serif]"
+    >
       <AnimationStyles />
+      <div
+        className="fixed inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-colors duration-500"
+        style={{
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(28,25,23,0.88), rgba(28,25,23,0.88)), url(${bgImage})`
+            : `url(${bgImage})`,
+        }}
+      />
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-colors duration-500 ${isDark ? 'bg-gradient-to-br from-black/20 via-transparent to-black/40' : 'bg-gradient-to-br from-white/20 via-transparent to-black/5'}`} />
       <Navbar />
 
-      {/* learn-main */}
-      <div className="learn-main-scroll flex-1 flex gap-7 max-w-[1280px] w-full mx-auto px-9 py-7 overflow-y-auto items-start">
+      {/* Loading */}
+      {loading && <div className="relative z-10"><LearnSkeleton /></div>}
 
-        {/* learn-col-left */}
-        <div
-          className="learn-col-left flex-[0_0_42%] flex flex-col gap-6 max-h-[calc(100vh-100px)] overflow-y-auto"
-        >
-          <CurrentModuleCard
-            moduleName={data.moduleName}
-            moduleDescription={data.moduleDescription}
-            currentPosition={data.currentPosition}
-          />
-          <LearningPath
-            chapters={chapters}
-            progress={progress}
-            activeLessonId={liveActiveLesson?.id}
-            onLessonClick={lesson => setActiveLesson(lesson)}
-          />
+      {/* Error */}
+      {!loading && error && (
+        <div className="flex-1 flex items-center justify-center relative z-10">
+          <div className="text-center max-w-md">
+            <div className="text-[48px] mb-4">⚠️</div>
+            <h2 className="text-[22px] font-semibold text-[#1a1a1a] mb-2">Something went wrong</h2>
+            <p className="text-[14px] text-[#888] leading-relaxed mb-6">{error}</p>
+            <button
+              onClick={loadPaths}
+              className="px-6 py-3 rounded-xl text-[14px] font-medium text-white bg-[#1a1a1a] border-none cursor-pointer transition-all hover:bg-[#333]"
+            >
+              Try again
+            </button>
+          </div>
         </div>
+      )}
 
-        {/* learn-col-right */}
-        <div className="flex-1 flex flex-col gap-5">
-          <LessonPlayer
-            lesson={liveActiveLesson}
-            onComplete={handleLessonComplete}
-            chapters={chapters}
-            onProgressUpdate={setPlayerProgress}
-          />
-          <TakeNotes
-            flow={liveActiveLesson?.flow || []}
-            globalIdx={playerProgress.globalIdx}
-            currentSentence={playerProgress.currentSentence}
-          />
+      {/* Empty — no paths */}
+      {!loading && !error && paths.length === 0 && (
+        <div className="flex-1 flex items-center justify-center relative z-10">
+          <div className="text-center max-w-md">
+            <div className="text-[48px] mb-4">📖</div>
+            <h2 className="text-[22px] font-semibold text-[#1a1a1a] mb-2">No learning paths yet</h2>
+            <p className="text-[14px] text-[#888] leading-relaxed mb-6">
+              Start by crafting a study intent. CLARE will generate a personalized learning path for you.
+            </p>
+            <button
+              onClick={() => navigate('/craft')}
+              className="px-6 py-3 rounded-xl text-[14px] font-medium text-white bg-[#1a1a1a] border-none cursor-pointer transition-all hover:bg-[#333] hover:scale-[1.02] active:scale-100"
+            >
+              Craft your first intent →
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Main content — data loaded */}
+      {!loading && !error && data && (
+        <div className="learn-main-scroll flex-1 flex gap-7 max-w-[1280px] w-full mx-auto px-9 py-7 overflow-y-auto items-start relative z-10">
+
+          {/* learn-col-left */}
+          <div className="learn-col-left flex-[0_0_42%] flex flex-col gap-6 max-h-[calc(100vh-100px)] overflow-y-auto">
+            <PathSelector paths={paths} selectedId={selectedPathId} onSelect={setSelectedPathId} />
+            <CurrentModuleCard
+              moduleName={data.moduleName}
+              moduleDescription={data.moduleDescription}
+              currentPosition={data.currentPosition}
+            />
+            <LearningPath
+              chapters={chapters}
+              progress={progress}
+              activeLessonId={liveActiveLesson?.id}
+              onLessonClick={lesson => setActiveLesson(lesson)}
+            />
+          </div>
+
+          {/* learn-col-right */}
+          <div className="flex-1 flex flex-col gap-5">
+            <LessonPlayer
+              lesson={liveActiveLesson}
+              onComplete={handleLessonComplete}
+              chapters={chapters}
+              onProgressUpdate={setPlayerProgress}
+            />
+            <TakeNotes
+              flow={liveActiveLesson?.flow || []}
+              globalIdx={playerProgress.globalIdx}
+              currentSentence={playerProgress.currentSentence}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

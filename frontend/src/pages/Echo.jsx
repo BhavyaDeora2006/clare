@@ -13,9 +13,11 @@ import {
 } from "../services/echoService";
 
 import useAsyncAction from "../hooks/useAsyncAction";
+import { usePreferences } from "../context/PreferencesContext";
 
-const Echo = ({ theme = "light" }) => {
-  const isDark = theme === "dark";
+const Echo = () => {
+  const { prefs } = usePreferences();
+  const isDark = prefs.theme === "dark";
 
   // 🌱 STATE
   const [decks, setDecks] = useState([]);
@@ -60,15 +62,15 @@ const Echo = ({ theme = "light" }) => {
     const loadCards = async () => {
       setLoadingCards(true);
 
-  try {
-    const data = await fetchSessionCards(selectedDeck.id);
-    setCards(data);
-    setCurrentIndex(0);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoadingCards(false);
-  }
+      try {
+        const data = await fetchSessionCards(selectedDeck.id);
+        setCards(data);
+        setCurrentIndex(0);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingCards(false);
+      }
     };
 
     loadCards();
@@ -117,26 +119,32 @@ const Echo = ({ theme = "light" }) => {
   };
 
   const handleDeleteDeck = async (id) => {
-  setDeletingDeckId(id);
+    setDeletingDeckId(id);
 
-  try {
-    await deleteDeck(id);
-    setDecks((prev) => prev.filter((d) => d.id !== id));
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setDeletingDeckId(null);
-  }
-};
+    try {
+      await deleteDeck(id);
+      setDecks((prev) => prev.filter((d) => d.id !== id));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeletingDeckId(null);
+    }
+  };
 
   return (
     <>
       <Navbar />
 
       {/* Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none"
-        style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover" }}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-colors duration-500"
+        style={{
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(28,25,23,0.88), rgba(28,25,23,0.88)), url(${bgImage})`
+            : `url(${bgImage})`,
+        }}
       />
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-colors duration-500 ${isDark ? 'bg-gradient-to-br from-black/20 via-transparent to-black/40' : 'bg-gradient-to-br from-white/20 via-transparent to-black/5'}`} />
 
       <div className="w-full min-h-screen flex flex-col items-center pt-10 pb-20 px-6 relative z-10">
         <div className="w-full max-w-[1150px]">
@@ -144,14 +152,14 @@ const Echo = ({ theme = "light" }) => {
           {!selectedDeck && (
             <>
               <div className="text-center mb-20">
-                <h1 className="text-5xl font-serif mb-5">Echo</h1>
+                <h1 className={`text-5xl font-serif mb-5 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>Echo</h1>
               </div>
 
               {loadingDecks ? (
                 <div className="flex flex-col items-center mt-20 gap-4">
-  <Loader size={32} />
-  <p className="text-sm text-[#a8a29e]">Loading your memories...</p>
-</div>
+                  <Loader size={32} />
+                  <p className="text-sm text-[#a8a29e]">Loading your memories...</p>
+                </div>
               ) : (
                 <DeckGrid
                   decks={decks}
@@ -178,10 +186,10 @@ const Echo = ({ theme = "light" }) => {
               {loadingCards ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
 
-    {/* loader */}
-    <Loader size={50} />
+                  {/* loader */}
+                  <Loader size={50} />
 
-  </div>
+                </div>
               ) : (
                 <FlashcardView
                   deck={selectedDeck}
@@ -198,16 +206,16 @@ const Echo = ({ theme = "light" }) => {
 
       {/* CREATE MODAL */}
       {showDeckModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
 
-    {/* Overlay */}
-    <div
-      className="absolute inset-0 bg-black/10 backdrop-blur-[3px]"
-      onClick={() => !creatingDeck && setShowDeckModal(false)}
-    />
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/10 backdrop-blur-[3px]"
+            onClick={() => !creatingDeck && setShowDeckModal(false)}
+          />
 
-    {/* Modal */}
-    <div className="
+          {/* Modal */}
+          <div className="
       relative z-10
       w-full max-w-md
 
@@ -221,22 +229,22 @@ const Echo = ({ theme = "light" }) => {
       animate-[fadeIn_0.2s_ease]
     ">
 
-      {/* Title */}
-      <h2 className="text-xl font-serif text-stone-800 mb-2">
-        Capture a memory
-      </h2>
+            {/* Title */}
+            <h2 className="text-xl font-serif text-stone-800 mb-2">
+              Capture a memory
+            </h2>
 
-      <p className="text-sm text-[#78716c] mb-5">
-        Give a name to what you want to remember.
-      </p>
+            <p className="text-sm text-[#78716c] mb-5">
+              Give a name to what you want to remember.
+            </p>
 
-      {/* Input */}
-      <input
-        value={newDeckTitle}
-        onChange={(e) => setNewDeckTitle(e.target.value)}
-        maxLength={MAX_TITLE_LENGTH}
-        placeholder="e.g. Recursion, OS, DBMS..."
-        className="
+            {/* Input */}
+            <input
+              value={newDeckTitle}
+              onChange={(e) => setNewDeckTitle(e.target.value)}
+              maxLength={MAX_TITLE_LENGTH}
+              placeholder="e.g. Recursion, OS, DBMS..."
+              className="
           w-full px-4 py-3 rounded-xl
 
           bg-white/70
@@ -247,16 +255,16 @@ const Echo = ({ theme = "light" }) => {
 
           text-sm
         "
-      />
-      <p className="text-right text-gray-600">{newDeckTitle.length}/{MAX_TITLE_LENGTH}</p>
-      {/* Actions */}
-      <div className="flex justify-end gap-3 mt-7">
+            />
+            <p className="text-right text-gray-600">{newDeckTitle.length}/{MAX_TITLE_LENGTH}</p>
+            {/* Actions */}
+            <div className="flex justify-end gap-3 mt-7">
 
-        {/* Cancel */}
-        <button
-          onClick={() => setShowDeckModal(false)}
-          disabled={creatingDeck}
-          className="
+              {/* Cancel */}
+              <button
+                onClick={() => setShowDeckModal(false)}
+                disabled={creatingDeck}
+                className="
             px-4 py-2 rounded-lg text-sm
 
             text-[#78716c]
@@ -265,112 +273,110 @@ const Echo = ({ theme = "light" }) => {
             transition
             disabled:opacity-50
           "
-        >
-          Cancel
-        </button>
+              >
+                Cancel
+              </button>
 
-        {/* Save */}
-        <button
-          onClick={handleCreateDeck}
-          disabled={creatingDeck}
-          className={`
+              {/* Save */}
+              <button
+                onClick={handleCreateDeck}
+                disabled={creatingDeck}
+                className={`
             px-6 py-2 rounded-lg text-sm font-medium text-white
 
-            ${
-              creatingDeck
-                ? "bg-[#a8a29e] cursor-wait"
-                : "bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a]"
-            }
+            ${creatingDeck
+                    ? "bg-[#a8a29e] cursor-wait"
+                    : "bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a]"
+                  }
 
             shadow-[0_10px_25px_rgba(138,154,123,0.25)]
             transition
           `}
-        >
-          {creatingDeck ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin"></span>
-              Saving...
-            </span>
-          ) : (
-            "Save"
-          )}
-        </button>
+              >
+                {creatingDeck ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin"></span>
+                    Saving...
+                  </span>
+                ) : (
+                  "Save"
+                )}
+              </button>
 
-      </div>
-    </div>
-  </div>
-)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* RENAME MODAL */}
       {editingDeck && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[3px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[3px]">
 
-    <div className="w-full max-w-md rounded-2xl bg-white/80 backdrop-blur-[3px] border border-[#e7e5e4]/50 shadow-xl p-6">
+          <div className="w-full max-w-md rounded-2xl bg-white/80 backdrop-blur-[3px] border border-[#e7e5e4]/50 shadow-xl p-6">
 
-      {/* Title */}
-      <h2 className="text-lg font-medium text-stone-800 mb-4">
-        Rename deck
-      </h2>
+            {/* Title */}
+            <h2 className="text-lg font-medium text-stone-800 mb-4">
+              Rename deck
+            </h2>
 
-      {/* Input */}
-      <input
-        value={editedTitle}
-        onChange={(e) => setEditedTitle(e.target.value)}
-        maxLength={MAX_TITLE_LENGTH}
-        className="w-full px-4 py-2 rounded-lg border border-[#e7e5e4] bg-white/70 focus:outline-none focus:ring-1 focus:ring-[#8a9a7b]"
-      />
-       <p className="text-right text-gray-600">{editedTitle.length}/{MAX_TITLE_LENGTH}</p>
+            {/* Input */}
+            <input
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              maxLength={MAX_TITLE_LENGTH}
+              className="w-full px-4 py-2 rounded-lg border border-[#e7e5e4] bg-white/70 focus:outline-none focus:ring-1 focus:ring-[#8a9a7b]"
+            />
+            <p className="text-right text-gray-600">{editedTitle.length}/{MAX_TITLE_LENGTH}</p>
 
-      {/* Actions */}
-      <div className="flex justify-end gap-3 mt-6">
+            {/* Actions */}
+            <div className="flex justify-end gap-3 mt-6">
 
-        <button
-          onClick={() => setEditingDeck(null)}
-          disabled={renamingDeck}
-          className="px-4 py-2 rounded-lg text-sm text-[#78716c] hover:bg-[#f5f5f4] transition disabled:opacity-50"
-        >
-          Cancel
-        </button>
+              <button
+                onClick={() => setEditingDeck(null)}
+                disabled={renamingDeck}
+                className="px-4 py-2 rounded-lg text-sm text-[#78716c] hover:bg-[#f5f5f4] transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
 
-        <button
-          onClick={handleRenameDeck}
-          disabled={renamingDeck}
-          className={`px-5 py-2 rounded-lg text-sm font-medium text-white
+              <button
+                onClick={handleRenameDeck}
+                disabled={renamingDeck}
+                className={`px-5 py-2 rounded-lg text-sm font-medium text-white
 
-          ${
-            renamingDeck
-              ? "bg-[#a8a29e] cursor-wait"
-              : "bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a]"
-          }
+          ${renamingDeck
+                    ? "bg-[#a8a29e] cursor-wait"
+                    : "bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a]"
+                  }
 
           transition`}
-        >
-          {renamingDeck ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin"></span>
-              Saving...
-            </span>
-          ) : (
-            "Save"
-          )}
-        </button>
+              >
+                {renamingDeck ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin"></span>
+                    Saving...
+                  </span>
+                ) : (
+                  "Save"
+                )}
+              </button>
 
-      </div>
-    </div>
-    
-  </div>
-)}
-{deletingDeckId && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center">
-    
-    {/* soft blur background */}
-    <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
+            </div>
+          </div>
 
-    {/* loader */}
-    <Loader size={36} />
+        </div>
+      )}
+      {deletingDeckId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
 
-  </div>
-)}
+          {/* soft blur background */}
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px]" />
+
+          {/* loader */}
+          <Loader size={36} />
+
+        </div>
+      )}
 
     </>
   );

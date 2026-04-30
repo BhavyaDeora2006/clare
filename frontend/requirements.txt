@@ -1,0 +1,17 @@
+# Frontend Dependencies
+
+## Core
+react==19.2.4
+react-dom==19.2.4
+react-router-dom==7.14.0
+
+## API & Backend Integration
+axios==1.14.0
+@supabase/supabase-js==2.97.0
+
+## UI & Styling
+tailwindcss==4.2.1
+lucide-react==1.7.0
+
+## Build Tools
+vite==7.3.1

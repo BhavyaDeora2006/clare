@@ -2,9 +2,12 @@ import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import { evaluateClarity } from "../utils/clarityEngine";
 import bgImage from "../assets/test-light-bg.png";
-import { getSession } from '../services/authServices';
-const Craft = ({ theme = 'light' }) => {
-  const isDark = theme === 'dark';
+import apiClient from '../services/apiClient';
+import { usePreferences } from '../context/PreferencesContext';
+
+const Craft = () => {
+  const { prefs } = usePreferences();
+  const isDark = prefs.theme === 'dark';
   const [focused, setFocused] = useState(false);
   const [input, setInput] = useState("");
   const [clarity, setClarity] = useState(0);
@@ -30,20 +33,10 @@ const Craft = ({ theme = 'light' }) => {
     setLoading(true);
 
     try {
-      const session = await getSession();
-
-      const res = await fetch("http://localhost:9000/api/learning/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.data.session.access_token}`
-        },
-        body: JSON.stringify({
-          intent: input.trim()
-        })
+      const res = await apiClient.post("/learning/generate", {
+        intent: input.trim()
       });
-      const data = await res.json();
-      console.log("Learning Path:", data);
+      console.log("Learning Path:", res.data);
     } catch (err) {
       console.error("API Error:", err);
     } finally {
@@ -59,15 +52,14 @@ const Craft = ({ theme = 'light' }) => {
 
       {/* Background */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none"
+        className="fixed inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-colors duration-500"
         style={{
-          // backgroundColor: "#faf9f6",
-          backgroundImage: `url(${bgImage})`,
-
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundImage: isDark
+            ? `linear-gradient(rgba(28,25,23,0.88), rgba(28,25,23,0.88)), url(${bgImage})`
+            : `url(${bgImage})`,
         }}
       />
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-colors duration-500 ${isDark ? 'bg-gradient-to-br from-black/20 via-transparent to-black/40' : 'bg-gradient-to-br from-white/20 via-transparent to-black/5'}`} />
       {/* Content */}
       <div className="w-full min-h-screen flex flex-col items-center pt-10 pb-20 px-6 relative z-10">
 

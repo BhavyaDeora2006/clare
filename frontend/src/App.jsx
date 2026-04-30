@@ -2,14 +2,17 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import DashboardPage from "./pages/DashboardPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { supabase } from "./services/supabaseClient";
+import { PreferencesProvider } from "./context/PreferencesContext";
 import Craft from "./pages/Craft";
 import Learn from "./pages/Learn";
 import Ask from "./pages/Ask";
 import Refine from "./pages/Refine";
 import Echo from "./pages/Echo";
 import Home from './pages/Home';
+import ResetPassword from './pages/ResetPassword';
 
 
 function AppContent() {
@@ -18,8 +21,10 @@ function AppContent() {
   useEffect(() => {
     // Listen for auth state changes (e.g., Google OAuth redirect)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        navigate('/craft');
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        navigate('/reset-password');
+      } else if (event === 'SIGNED_IN' && session) {
+        navigate('/dashboard');
       }
     });
 
@@ -31,10 +36,20 @@ function AppContent() {
       {/* Public */}
       <Route path="/home" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected */}
       <Route
         path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
         element={
           <ProtectedRoute>
             <Dashboard />
@@ -92,7 +107,7 @@ function AppContent() {
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardPage />
           </ProtectedRoute>
         }
       />
@@ -102,9 +117,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <PreferencesProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </PreferencesProvider>
   );
 }
 
