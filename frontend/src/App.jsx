@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from "./pages/Login";
-import Dashboard from "./pages/settings";
+import Dashboard from "./pages/Settings";
 import DashboardPage from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { supabase } from "./services/supabaseClient";
