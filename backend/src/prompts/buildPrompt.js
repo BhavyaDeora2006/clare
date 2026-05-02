@@ -44,11 +44,11 @@ Format:
 }
 
 Rules:
-- Keep 4-5 chapters
-- Each chapter 2-3 topics
+- Keep 3-4 chapters
+- Each chapter 2 topics
 - Provide content for EVERY topic
 - Keep explanations beginner-friendly but meaningful
-- explanation must be split into 3-5 short lines inside "flow"
+- explanation must be split into 3 short lines inside "flow"
 User intent:
 "${intent}"
 `;

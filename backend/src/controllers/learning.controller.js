@@ -1,16 +1,50 @@
+// src/controllers/learningPath.controller.js
+
 import { supabase } from "../config/supabase.js";
 import { groq } from "../config/groq.js";
 import { buildPrompt } from "../prompts/buildPrompt.js";
 
-export const generateLearningPath = async (req, res) => {
+// 🧠 Helper: Safe JSON extraction
+const extractJSON = (text) => {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+
+  if (start === -1 || end === -1) return null;
+
+  const jsonString = text.slice(start, end + 1);
 
   try {
-    const user_id = req.user.id;
+    return JSON.parse(jsonString);
+  } catch {
+    try {
+      const fixed = jsonString
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]");
+      return JSON.parse(fixed);
+    } catch {
+      return null;
+    }
+  }
+};
+
+// 🧠 Generate Learning Path
+export const generateLearningPath = async (req, res) => {
+  try {
+    const user_id = req.user?.id;
     const { intent } = req.body;
+
+    // 🛡️ Input validation
+    if (!user_id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!intent || intent.trim().length < 5) {
+      return res.status(400).json({ error: "Invalid intent" });
+    }
 
     console.log("📥 Incoming intent:", intent);
 
-    // 🔮 Call Groq
+    // 🔮 AI call
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
       messages: [
@@ -22,71 +56,44 @@ export const generateLearningPath = async (req, res) => {
       temperature: 0.7,
     });
 
-    let aiResponse = completion.choices[0].message.content;
+    let aiResponse = completion.choices?.[0]?.message?.content;
 
-  
-    console.log("\n🧠 RAW AI RESPONSE:\n");
-    console.log(aiResponse);
-    console.log("\n-----------------------------\n");
+    if (!aiResponse) {
+      return res.status(500).json({ error: "Empty AI response" });
+    }
 
-    // remove markdown wrappers
+    console.log("\n🧠 RAW AI RESPONSE:\n", aiResponse);
+
+    // 🧹 Clean markdown
     aiResponse = aiResponse
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    // extract JSON safely
-    const start = aiResponse.indexOf("{");
-    const end = aiResponse.lastIndexOf("}");
+    // 🧠 Extract JSON safely
+    const parsed = extractJSON(aiResponse);
 
-    if (start === -1 || end === -1) {
-      console.error("❌ No JSON found in AI response");
-      return res.status(500).json({
-        error: "Invalid AI response format",
-      });
+    if (!parsed) {
+      console.error("❌ Failed to extract JSON");
+      return res.status(500).json({ error: "AI JSON parsing failed" });
     }
 
-    const jsonString = aiResponse.slice(start, end + 1);
-
-  let parsed;
-
-try {
-  parsed = JSON.parse(jsonString);
-} catch (err) {
-  console.warn("⚠️ First parse failed, attempting repair...");
-
-  try {
-    // basic fixes
-    const fixed = jsonString
-      .replace(/,\s*}/g, "}")   // remove trailing commas
-      .replace(/,\s*]/g, "]");
-
-    parsed = JSON.parse(fixed);
-  } catch (err2) {
-    console.error("❌ JSON PARSE FAILED:\n", jsonString);
-    return res.status(500).json({
-      error: "AI JSON parsing failed",
-    });
-  }
-}
-
-    // 🛡️ Validate structure
-    if (!parsed.chapters || !Array.isArray(parsed.chapters)) {
-      console.error("❌ Invalid structure from AI:", parsed);
-      return res.status(500).json({
-        error: "AI did not return valid chapters",
-      });
+    // 🛡️ Structure validation
+    if (!Array.isArray(parsed.chapters) || parsed.chapters.length === 0) {
+      return res.status(500).json({ error: "Invalid chapters structure" });
     }
-    if (!parsed.content) {
-  console.warn("⚠️ AI did not return content, using empty object");
-}
+
+    if (!parsed.chapters[0]?.topics?.length) {
+      return res.status(500).json({ error: "Invalid topics structure" });
+    }
 
     const structure = {
       chapters: parsed.chapters,
     };
+
     const content = parsed.content || {};
 
-    // Save to Supabase
+    // 💾 Save to DB
     const { data, error } = await supabase
       .from("learning_paths")
       .insert([
@@ -96,8 +103,8 @@ try {
           title: parsed.title || intent.slice(0, 40),
           structure,
           content,
-          current_chapter_id: parsed.chapters[0]?.id,
-          current_topic_id: parsed.chapters[0]?.topics[0]?.id,
+          current_chapter_id: parsed.chapters[0].id,
+          current_topic_id: parsed.chapters[0].topics[0].id,
           progress: 0,
         },
       ])
@@ -109,26 +116,56 @@ try {
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("✅ Learning path saved successfully");
+    console.log("✅ Learning path saved");
 
     return res.status(200).json({
-      message: "AI learning path created",
+      message: "Learning path created",
       learningPath: data,
     });
 
   } catch (err) {
     console.error("🔥 SERVER ERROR:", err);
-
-    return res.status(500).json({
-      error: "AI generation failed",
-    });
+    return res.status(500).json({ error: "AI generation failed" });
   }
 };
 
+// 📋 Get All Learning Paths for User
+export const getAllLearningPaths = async (req, res) => {
+  try {
+    const user_id = req.user?.id;
+
+    if (!user_id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { data, error } = await supabase
+      .from("learning_paths")
+      .select("*")
+      .eq("user_id", user_id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("❌ Supabase Error:", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json(data || []);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch learning paths" });
+  }
+};
+
+// 📥 Get Learning Path
 export const getLearningPath = async (req, res) => {
   try {
-    const user_id = req.user.id;
+    const user_id = req.user?.id;
     const { id } = req.params;
+
+    if (!user_id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
     const { data, error } = await supabase
       .from("learning_paths")
@@ -137,20 +174,28 @@ export const getLearningPath = async (req, res) => {
       .eq("user_id", user_id)
       .single();
 
-    if (error) throw error;
+    if (error || !data) {
+      return res.status(404).json({ error: "Learning path not found" });
+    }
 
     return res.json(data);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch learning path" });
   }
 };
 
+// 🔄 Update Progress (current position)
 export const updateProgress = async (req, res) => {
   try {
-    const user_id = req.user.id;
+    const user_id = req.user?.id;
     const { id } = req.params;
     const { topicId, chapterId } = req.body;
+
+    if (!topicId || !chapterId) {
+      return res.status(400).json({ error: "topicId and chapterId required" });
+    }
 
     const { data, error } = await supabase
       .from("learning_paths")
@@ -166,20 +211,24 @@ export const updateProgress = async (req, res) => {
     if (error) throw error;
 
     return res.json(data);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update progress" });
   }
 };
 
+// ✅ Toggle Topic Completion
 export const toggleTopicCompletion = async (req, res) => {
   try {
-    const user_id = req.user.id;
+    const user_id = req.user?.id;
     const { id } = req.params;
     const { topicId } = req.body;
-if (!topicId) {
-  return res.status(400).json({ error: "topicId required" });
-}
+
+    if (!topicId) {
+      return res.status(400).json({ error: "topicId required" });
+    }
+
     const { data, error } = await supabase
       .from("learning_paths")
       .select("structure")
@@ -187,45 +236,55 @@ if (!topicId) {
       .eq("user_id", user_id)
       .single();
 
-    if (error) throw error;
+    if (error || !data) {
+      return res.status(404).json({ error: "Learning path not found" });
+    }
 
-    let structure = data.structure;
+    // 🛡️ Deep clone before mutation
+    let structure = JSON.parse(JSON.stringify(data.structure));
 
-    // 🔁 toggle completion
+    let found = false;
+
     structure.chapters.forEach((ch) => {
       ch.topics.forEach((t) => {
         if (t.id === topicId) {
           t.completed = !t.completed;
+          found = true;
         }
       });
     });
 
-    // 🧠 calculate progress
+    if (!found) {
+      return res.status(404).json({ error: "Topic not found" });
+    }
+
+    // 🧠 Progress calculation
     const totalTopics = structure.chapters.reduce(
       (acc, ch) => acc + ch.topics.length,
       0
     );
 
     const completedTopics = structure.chapters.reduce(
-      (acc, ch) =>
-        acc + ch.topics.filter((t) => t.completed).length,
+      (acc, ch) => acc + ch.topics.filter((t) => t.completed).length,
       0
     );
 
-    const progress = Math.round((completedTopics / totalTopics) * 100);
+    const progress =
+      totalTopics === 0
+        ? 0
+        : Math.round((completedTopics / totalTopics) * 100);
 
-    // 💾 update DB
+    // 💾 Update DB
     const { error: updateError } = await supabase
       .from("learning_paths")
-      .update({ structure, progress })   // 🔥 THIS LINE FIXES IT
+      .update({ structure, progress })
       .eq("id", id)
-      .eq("user_id", user_id)
-      .select()
-      .single();
+      .eq("user_id", user_id);
 
     if (updateError) throw updateError;
 
-    res.json({ success: true, structure, progress });
+    return res.json({ success: true, structure, progress });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Toggle failed" });
