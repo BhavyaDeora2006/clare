@@ -1,123 +1,163 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { getPreferences, updatePreferences } from "../services/preferencesService";
-import { supabase } from "../services/supabaseClient";
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../services/supabaseClient"; // adjust path if needed
 
-/* ── Default values ── */
-const defaultPrefs = {
-  theme: "dark",
-  accent: "sage",
-  reduce_motion: false,
-  auto_play: true,
-  auto_expand: false,
-  show_percent: true,
-  explanation_style: "guided",
-  session_closure: "soft",
-  clarification_style: "guided-c",
-  memory_reinforcement: "suggested",
-};
+const PreferencesContext = createContext();
 
-const STORAGE_KEY = "clare_preferences";
-
-/* ── Context ── */
-const PreferencesContext = createContext(null);
-
-export const usePreferences = () => {
-  const ctx = useContext(PreferencesContext);
-  if (!ctx) throw new Error("usePreferences must be used within PreferencesProvider");
-  return ctx;
-};
-
-/* ── Provider ── */
 export const PreferencesProvider = ({ children }) => {
-  const [prefs, setPrefs] = useState(() => {
-    // Hydrate from localStorage immediately to avoid flash
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? { ...defaultPrefs, ...JSON.parse(stored) } : defaultPrefs;
-    } catch {
-      return defaultPrefs;
-    }
+  // 🌱 Existing preferences state
+  const [prefs, setPrefs] = useState({
+    theme: "light",
+    accent: "sage",
+    reduce_motion: false,
+    auto_play: true,
+    auto_expand: true,
+    show_percent: true,
+    explanation_style: "guided",
+    session_closure: "soft",
+    clarification_style: "guided-c",
+    memory_reinforcement: "suggested",
   });
-  const [loaded, setLoaded] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState("https://assets.leetcode.com/users/Bhavya_Deora/avatar_1772714696.png");
 
-  /* ── Load from backend ── */
-  const loadPreferences = useCallback(async () => {
+  // 🌱 Avatar state (KEEPING your architecture)
+  const [avatarPreview, setAvatarPreview] = useState("/default-avatar.png");
+
+  const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  const init = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user?.id) {
+      await fetchPreferences(user.id);
+    }
+
+    setLoading(false);
+  };
+
+  init();
+}, []);
+
+  // 🌊 Fetch preferences + avatar on load
+  const fetchPreferences = async (userId) => {
+    if (!userId) return;
+
     try {
-      const data = await getPreferences();
-      if (data && Object.keys(data).length > 0) {
-        const merged = { ...defaultPrefs, ...data };
-        setPrefs(merged);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      const { data, error } = await supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (!error && data) {
+        setPrefs(data);
       }
+
+      // 🔽 Fetch avatar
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("avatar_url")
+        .eq("id", userId)
+        .single();
+
+      if (profile?.avatar_url) {
+        setAvatarPreview(profile.avatar_url);
+      }
+
     } catch (err) {
-      console.warn("Preferences: using local/default values", err.message);
-    } finally {
-      setLoaded(true);
+      console.error("Fetch preferences error:", err);
     }
-  }, []);
+  };
 
-  /* ── Load on auth ready ── */
-  useEffect(() => {
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) loadPreferences();
-      else setLoaded(true);
-    };
-    init();
-  }, [loadPreferences]);
-
-  /* ── Update a single field (local only, not persisted yet) ── */
-  const updateField = useCallback((key, value) => {
-    setPrefs(prev => ({ ...prev, [key]: value }));
-  }, []);
-
-  /* ── Save all to backend + localStorage ── */
-  const savePreferences = useCallback(async (overridePrefs) => {
-    const toSave = overridePrefs || prefs;
+  // 🌊 Save preferences
+  const savePreferences = async (updatedPrefs) => {
     try {
-      await updatePreferences(toSave);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      setPrefs(toSave);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("user_preferences")
+        .upsert({
+          user_id: user.id,
+          ...updatedPrefs,
+        });
+
+      if (error) throw error;
+
+      setPrefs(updatedPrefs);
     } catch (err) {
-      // Persist to localStorage even if backend fails
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-      console.error("Failed to save preferences to backend:", err.message);
+      console.error("Save preferences error:", err);
+      throw err;
     }
-  }, [prefs]);
+  };
 
-  /* ── Reset to defaults ── */
-  const resetPreferences = useCallback(() => {
-    setPrefs(defaultPrefs);
-  }, []);
+  // 🌊 Upload avatar (FULL FLOW)
+  const uploadAvatar = async (file) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!file || !user) return null;
 
-  /* ── Apply theme to <html> whenever it changes ── */
-  useEffect(() => {
-    const root = document.documentElement;
-    if (prefs.theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+      const filePath = `${user.id}/${Date.now()}`;
+
+      // upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // get public URL
+      const { data } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      const publicUrl = data.publicUrl;
+
+      // save in DB
+      const { error: dbError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (dbError) throw dbError;
+
+      // update UI instantly
+      setAvatarPreview(publicUrl);
+
+      return publicUrl;
+
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      return null;
     }
-  }, [prefs.theme]);
+  };
 
-  const value = {
-    prefs,
-    loaded,
-    defaultPrefs,
-    updateField,
-    savePreferences,
-    loadPreferences,
-    resetPreferences,
-    avatarPreview,
-    setAvatarPreview,
+  // 🌊 optional: direct setter (for preview before upload)
+  const previewAvatar = (file) => {
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
   };
 
   return (
-    <PreferencesContext.Provider value={value}>
+    <PreferencesContext.Provider
+      value={{
+        prefs,
+        setPrefs,
+        savePreferences,
+        fetchPreferences,
+
+        avatarPreview,
+        setAvatarPreview,
+        uploadAvatar,
+        previewAvatar,
+
+        loading,
+      }}
+    >
       {children}
     </PreferencesContext.Provider>
   );
 };
 
-export default PreferencesContext;
+export const usePreferences = () => {
+  return useContext(PreferencesContext);
+};

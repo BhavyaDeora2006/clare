@@ -5,7 +5,6 @@ import { signOut, signOutGlobal } from "../services/authServices";
 import { supabase } from "../services/supabaseClient";
 import Navbar from "../components/Navbar";
 
-
 /* ─────────────────────── Reusable Components ─────────────────────── */
 
 // Toggle Switch
@@ -67,20 +66,20 @@ const RadioGroup = ({ label, options, selectedValue, onChange }) => (
 );
 
 // Option Row
-const OptionRow = ({ label, value, onClick }) => (
-    <button
-        onClick={onClick}
-        className="flex items-center justify-between w-full py-[22px] px-2 bg-transparent border-none cursor-pointer rounded-[10px] transition-colors duration-150 hover:bg-[#fafaf9]"
-    >
-        <span className="text-[15px] text-[#57534e] font-medium">{label}</span>
-        <span className="flex items-center gap-2 text-[14px] text-[#a8a29e]">
-            {value && <span>{value}</span>}
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-        </span>
-    </button>
-);
+// const OptionRow = ({ label, value, onClick }) => (
+//     <button
+//         onClick={onClick}
+//         className="flex items-center justify-between w-full py-[22px] px-2 bg-transparent border-none cursor-pointer rounded-[10px] transition-colors duration-150 hover:bg-[#fafaf9]"
+//     >
+//         <span className="text-[15px] text-[#57534e] font-medium">{label}</span>
+//         <span className="flex items-center gap-2 text-[14px] text-[#a8a29e]">
+//             {value && <span>{value}</span>}
+//             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+//                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+//             </svg>
+//         </span>
+//     </button>
+// );
 
 // Section Container
 const SectionContainer = ({ title, subtitle, children, footer }) => (
@@ -154,7 +153,7 @@ const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) =
             {/* ── User Profile ── */}
             <div className="flex items-center gap-[14px] px-1.5 mb-9">
                 <div className={`w-[50px] h-[50px] rounded-full shrink-0 overflow-hidden shadow-[0_0_0_2px_${isDark ? '#292524' : '#fff'}]  ${isDark ? 'bg-[#292524]' : 'bg-[#f4f6f1]'}`}>
-                    <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover rounded-full" />
+                    <img src={avatarPreview || '/default-avatar.png'} alt="avatar" className="w-full h-full object-cover rounded-full" />
                 </div>
                 <div className="min-w-0">
                     <p className={`text-[15px] font-semibold m-0 whitespace-nowrap overflow-hidden text-ellipsis ${isDark ? 'text-stone-200' : 'text-[#292524]'}`}>
@@ -233,47 +232,79 @@ const SaveBtn = ({ onClick, children = "Save Changes", className = "" }) => (
 /* ─────────────────── Sections ──────────────────── */
 
 const ProfileSection = () => {
-    const { avatarPreview, setAvatarPreview } = usePreferences();
+    const { avatarPreview, previewAvatar, uploadAvatar } = usePreferences();
     const fileInputRef = useRef(null);
     const [user, setUser] = useState(null);
     const [username, setUsername] = useState("");
     const [tempName, setTempName] = useState("");
-    const [isEditingName, setIsEditingName] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false)
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setUser(user);
-                const name = user.user_metadata?.full_name || user.email?.split('@')[0] || "";
-                setUsername(name);
-                setTempName(name);
-            }
-        };
-        fetchUser();
-    }, []);
+useEffect(() => {
+    const fetchUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        setUser(user);
+
+        // 🔽 fetch from profiles (PRIMARY SOURCE)
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", user.id)
+            .single();
+
+        const name =
+            profile?.name ||
+            user.user_metadata?.full_name ||
+            user.email?.split("@")[0] ||
+            "";
+
+        setUsername(name);
+        setTempName(name);
+    };
+
+    fetchUser();
+}, []);
 
     const handleSaveName = async () => {
-        if (!user || !tempName.trim()) return;
-        try {
-            await supabase.auth.updateUser({ data: { full_name: tempName } });
-            setUsername(tempName);
-            setIsEditingName(false);
-        } catch (err) {
-            console.error(err);
+    if (!user || !tempName.trim()) return;
+
+    try {
+        // 1️⃣ update auth metadata
+        await supabase.auth.updateUser({
+            data: { full_name: tempName }
+        });
+
+        // 2️⃣ update profiles table (IMPORTANT)
+        const { error } = await supabase
+            .from("profiles")
+            .update({ name: tempName })
+            .eq("id", user.id);
+
+        if (error) {
+            console.error("Profile update error:", error);
+            return;
         }
-    };
+
+        // 3️⃣ update UI
+        setUsername(tempName);
+        setIsEditingName(false);
+
+    } catch (err) {
+        console.error(err);
+    }
+};
 
     const handleAvatarUpload = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-        // Preview locally immediately
-        const objectUrl = URL.createObjectURL(file);
-        setAvatarPreview(objectUrl);
+    // ✅ instant UI preview
+    previewAvatar(file);
 
-        // TODO: backend upload logic
-    };
+    // ✅ upload + persist
+    await uploadAvatar(file);
+};
 
     return (
         <SectionContainer
@@ -284,7 +315,7 @@ const ProfileSection = () => {
                 <h4 className="text-[14px] font-semibold text-[#292524] m-0 mb-4">Profile Picture</h4>
                 <div className="flex items-center gap-6">
                     <div className="relative group w-[90px] h-[90px] rounded-full overflow-hidden border border-[#e7e5e4] shadow-[0_2px_8px_rgba(0,0,0,0.06)] bg-[#f4f6f1] shrink-0">
-                        <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+                        <img src={avatarPreview || "/default-avatar.png"} alt="avatar" className="w-full h-full object-cover" />
 
                         {/* Hover Overlay */}
                         <div

@@ -1,6 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePreferences } from "../context/PreferencesContext";
-
 const Navbar = ({ onAvatarClick }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -77,7 +76,7 @@ const Navbar = ({ onAvatarClick }) => {
                     className="w-9 h-9 rounded-full overflow-hidden cursor-pointer"
                 >
                     <img
-                        src={avatarPreview}
+                        src={avatarPreview || "/default-avatar.png"}
                         alt="avatar"
                         className="w-full h-full object-cover rounded-full"
                     />
