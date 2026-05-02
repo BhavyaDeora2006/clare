@@ -190,15 +190,7 @@ const Sidebar = ({ activeSection, onSelect, onBack, onDeleteAccount }) => {
                 })}
             </nav>
 
-            {/* ── Sidebar footer ── */}
-            <div className="mt-auto pt-6 border-t border-[rgba(214,211,208,0.6)]">
-                <button
-                    onClick={onDeleteAccount}
-                    className="py-[11px] px-4 text-[13.5px] text-red-500/70 bg-transparent border-none cursor-pointer w-full text-left rounded-xl transition-all duration-150 mt-1 hover:bg-gray-100/50"
-                >
-                    Delete account
-                </button>
-            </div>
+
         </div>
     );
 };
