@@ -17,16 +17,17 @@ export const uploadPdfService = async (buffer) => {
     .single();
 
   if (existing) {
-    return { documentId: existing.id, reused: true };
+    return { documentId: existing.id, reused: true, pageCount: existing.pageCount };
   }
 
   // 3. process PDF → chunks
   const chunks = await processPdfForAsk(buffer);
 
+const pageCount = Math.max(...chunks.map(c => c.page_number));
   // 4. create document
   const { data: doc } = await supabase
     .from("documents")
-    .insert({ pdf_hash: pdfHash })
+    .insert({ pdf_hash: pdfHash, page_count: pageCount })
     .select()
     .single();
 
@@ -46,5 +47,5 @@ export const uploadPdfService = async (buffer) => {
 
   await supabase.from("document_chunks").insert(records);
 
-  return { documentId: doc.id, reused: false };
+  return { documentId: doc.id, reused: false, pageCount };
 };

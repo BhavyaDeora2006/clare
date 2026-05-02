@@ -202,17 +202,33 @@ const navigate = useNavigate();
 
                 {/* Suggestions */}
                 {suggestions.length > 0 && clarity < 100 && (
-                  <ul className="mt-3 space-y-1 text-xs opacity-80 text-left mx-auto max-w-sm">
-                    {suggestions.map((s, i) => (
-                      <li key={i}>• {s}</li>
-                    ))}
-                  </ul>
-                )}
-                {summary && (
-                  <p className="mt-2 text-xs opacity-70 tracking-widest">
-                    {summary}
-                  </p>
-                )}
+  <ul
+    className={`mt-4 space-y-2 text-sm text-left mx-auto max-w-md transition-colors ${
+      isDark ? "text-[#a8a29e]" : "text-gray-600"
+    }`}
+  >
+    {suggestions.map((s, i) => (
+      <li key={i} className="flex gap-2 leading-relaxed">
+        <span className={`mt-1 ${
+          isDark ? "text-[#6b7d5e]" : "text-gray-400"
+        }`}>
+          •
+        </span>
+        <span>{s}</span>
+      </li>
+    ))}
+  </ul>
+)}
+
+{summary && (
+  <p
+    className={`mt-4 text-xs tracking-wide text-center max-w-md mx-auto transition-colors ${
+      isDark ? "text-[#78716c]" : "text-gray-500"
+    }`}
+  >
+    {summary}
+  </p>
+)}
                 <div className="my-10 h-[1px] bg-[#e7e5e4] w-full" />
               </div>
 

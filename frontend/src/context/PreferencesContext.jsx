@@ -14,7 +14,7 @@ export const PreferencesProvider = ({ children }) => {
     show_percent: true,
     explanation_style: "guided",
     session_closure: "soft",
-    clarification_style: "guided-c",
+    clarification_style: "guided",
     memory_reinforcement: "suggested",
   });
 
@@ -60,8 +60,10 @@ useEffect(() => {
         .single();
 
       if (profile?.avatar_url) {
-        setAvatarPreview(profile.avatar_url);
-      }
+  setAvatarPreview((prev) =>
+    prev === "/default-avatar.png" ? profile.avatar_url : prev
+  );
+}
 
     } catch (err) {
       console.error("Fetch preferences error:", err);
@@ -95,8 +97,7 @@ useEffect(() => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!file || !user) return null;
-
-      const filePath = `${user.id}/${Date.now()}`;
+      const filePath = `${user.id}/avatar`;
 
       // upload to storage
       const { error: uploadError } = await supabase.storage
@@ -110,7 +111,7 @@ useEffect(() => {
         .from("avatars")
         .getPublicUrl(filePath);
 
-      const publicUrl = data.publicUrl;
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
 
       // save in DB
       const { error: dbError } = await supabase

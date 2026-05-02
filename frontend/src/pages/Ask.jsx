@@ -5,8 +5,14 @@ import { usePreferences } from "../context/PreferencesContext";
 import bgImage from "../assets/test-light-bg.png";
 
 /* ──────────────────────── CONTEXT BAR ───────────────────── */
-const ContextBar = ({ documentName, pageCount, onUploadClick }) => (
-  <div className="mx-8 mt-3 mb-1 rounded-2xl border border-[#44403c]/30 bg-[#292524]/60 px-7 py-3 flex items-center justify-between">
+const ContextBar = ({ documentName, pageCount, onUploadClick, isDark }) => (
+  <div
+  className={`mx-8 mt-3 mb-1 rounded-2xl px-7 py-3 flex items-center justify-between transition-colors duration-300 ${
+    isDark
+      ? "bg-[#292524]/60 border border-[#44403c]/30"
+      : "bg-white/80 border border-gray-200 backdrop-blur-md"
+  }`}
+>
     <div className="flex items-center gap-2 text-sm text-stone-500">
       <span className="text-[#a8a29e] font-light">Active Context:</span>
       {documentName ? (
@@ -14,7 +20,7 @@ const ContextBar = ({ documentName, pageCount, onUploadClick }) => (
           <span className="font-medium text-stone-200">{documentName}</span>
           <span className="text-[#44403c] mx-1">|</span>
           <span className="text-[#a8a29e] font-light">
-            Uploaded: {pageCount} {pageCount === 1 ? "page" : "pages"}
+            { pageCount ? ( <>Uploaded: {pageCount} {pageCount === 1 ? "page" : "pages"}</>) : (<>Processing document...</>) }
           </span>
         </>
       ) : (
@@ -40,7 +46,7 @@ const ContextBar = ({ documentName, pageCount, onUploadClick }) => (
 );
 
 /* ─────────────── TYPING INDICATOR ───────────────────────── */
-const TypingIndicator = () => (
+const TypingIndicator = ({isDark}) => (
   <div className="flex justify-center">
     <div className="w-full max-w-2xl">
       <div
@@ -58,15 +64,21 @@ const TypingIndicator = () => (
 );
 
 /* ──────────────── EMPTY STATE ───────────────────────────── */
-const EmptyState = () => (
+const EmptyState = ({isDark}) => (
   <div className="flex-1 flex items-center justify-center">
     <div className="text-center max-w-md">
-      <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-[#292524]/80 flex items-center justify-center">
+      <div
+  className={`w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center transition-colors duration-300 ${
+    isDark ? "bg-[#292524]/80" : "bg-gray-100"
+  }`}
+>
         <svg className="w-8 h-8 text-[#6b7d5e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
         </svg>
       </div>
-      <h3 className="text-lg font-light text-stone-200 mb-2 font-serif">
+      <h3 className={`text-lg font-light mb-2 font-serif ${
+  isDark ? "text-stone-200" : "text-gray-800"
+}`}>
         Ask anything about your material
       </h3>
       <p className="text-sm text-[#a8a29e] font-light leading-relaxed">
@@ -77,7 +89,7 @@ const EmptyState = () => (
 );
 
 /* ──────────────────── MESSAGE BUBBLE ────────────────────── */
-const MessageBubble = ({ message }) => {
+const MessageBubble = ({ message, isDark }) => {
   const { avatarPreview } = usePreferences();
 
   if (message.role === "user") {
@@ -92,8 +104,12 @@ const MessageBubble = ({ message }) => {
           />
         </div>
         <div
-          className="px-5 py-3 bg-[#292524]/60 border border-[#44403c]/30 rounded-2xl rounded-tl-sm text-sm text-stone-200 leading-relaxed max-w-lg font-serif"
-        >
+  className={`px-5 py-3 rounded-2xl rounded-tl-sm text-sm leading-relaxed max-w-lg font-serif transition-colors duration-300 ${
+    isDark
+      ? "bg-[#292524]/60 border border-[#44403c]/30 text-stone-200"
+      : "bg-gray-100 border border-gray-200 text-gray-800"
+  }`}
+>
           {message.content}
         </div>
       </div>
@@ -105,13 +121,23 @@ const MessageBubble = ({ message }) => {
     <div className="flex justify-center">
       <div className="w-full max-w-2xl">
         <div
-          className="px-6 py-5 bg-[#1c1917]/60 border border-[#44403c]/30 rounded-2xl shadow-sm font-serif"
-        >
-          <p className="text-sm text-stone-200 leading-relaxed mb-4 whitespace-pre-wrap">{message.content}</p>
+  className={`px-6 py-5 rounded-2xl shadow-sm font-serif transition-colors duration-300 ${
+    isDark
+      ? "bg-[#1c1917]/60 border border-[#44403c]/30 text-stone-200"
+      : "bg-white border border-gray-200 text-gray-800"
+  }`}
+>
+          <p className={`text-sm leading-relaxed mb-4 whitespace-pre-wrap ${
+  isDark ? "text-stone-200" : "text-gray-800"
+}`}>{message.content}</p>
           {message.steps && (
-            <ol className="space-y-2 border-t border-[#44403c]/30 pt-4">
+            <ol className={`space-y-2 pt-4 ${
+  isDark ? "border-t border-[#44403c]/30" : "border-t border-gray-200"
+}`}>
               {message.steps.map((step, i) => (
-                <li key={i} className="flex gap-3 text-sm text-[#a8a29e] leading-relaxed">
+                <li className={`flex gap-3 text-sm leading-relaxed ${
+  isDark ? "text-[#a8a29e]" : "text-gray-500"
+}`}>
                   <span className="flex-shrink-0 text-[#6b7d5e] font-light w-4 text-right">{i + 1}.</span>
                   <span>{step}</span>
                 </li>
@@ -125,14 +151,14 @@ const MessageBubble = ({ message }) => {
 };
 
 /* ──────────────────── CHAT SECTION ─────────────────────── */
-const ChatSection = ({ onReferencesUpdate, documentId }) => {
+const ChatSection = ({ onReferencesUpdate, documentId, isDark }) => {
   const [inputValue, setInputValue] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
-
+  const isDisabled = !documentId;
   const handleVoiceRecord = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -212,20 +238,33 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#292524]/60 rounded-3xl shadow-sm border border-[#44403c]/30 overflow-hidden">
+    <div
+  className={`flex flex-col h-full rounded-3xl shadow-sm overflow-hidden transition-colors duration-300 ${
+    isDark
+      ? "bg-[#292524]/60 border border-[#44403c]/30"
+      : "bg-white/80 backdrop-blur-md border border-gray-200"
+  }`}
+>
       <div className="flex-1 overflow-y-auto p-7 space-y-6">
-        {messages.length === 0 && !isLoading && <EmptyState />}
+        {messages.length === 0 && !isLoading && <EmptyState isDark={isDark}/>}
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <MessageBubble key={i} message={msg} isDark={isDark} />
         ))}
-        {isLoading && <TypingIndicator />}
+        {isLoading && <TypingIndicator isDark={isDark}/>}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="border-t border-[#44403c]/30 p-5">
-        <div className="flex items-center gap-3 bg-[#1c1917]/60 rounded-2xl px-5 py-3 border border-[#44403c]/40 shadow-sm focus-within:border-[#6b7d5e] transition-all">
+      <div
+  className={`flex items-center gap-3 rounded-2xl px-5 py-3 shadow-sm transition-colors duration-300 ${
+    isDark
+      ? "bg-[#1c1917]/60 border border-[#44403c]/40"
+      : "bg-white border border-gray-300"
+  } ${isDisabled ? "opacity-50 pointer-events-none" : ""}`}
+>
           <button
             onClick={handleVoiceRecord}
+            disabled={isDisabled}
             className={`p-1 transition-colors cursor-pointer ${isRecording ? "text-red-400 animate-pulse" : "text-[#a8a29e] hover:text-stone-200"}`}
             title={isRecording ? "Stop recording" : "Start voice input"}
           >
@@ -235,16 +274,20 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
           </button>
           <input
             type="text"
-            placeholder="Type a message..."
+  placeholder={isDisabled ? "Upload a document first..." : "Type a message..."}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            className="flex-1 bg-transparent text-sm text-stone-200 placeholder:text-[#78716c] outline-none disabled:opacity-50 font-serif"
-          />
+            disabled={isLoading || isDisabled}
+            className={`flex-1 bg-transparent text-sm outline-none disabled:opacity-50 font-serif ${
+  isDark
+    ? "text-stone-200 placeholder:text-[#78716c]"
+    : "text-gray-800 placeholder:text-gray-400"
+}`}
+ />
           <button
             onClick={handleSend}
-            disabled={isLoading || !inputValue.trim()}
+            disabled={isLoading || !inputValue.trim() || isDisabled}
             className="px-5 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a] rounded-xl hover:shadow-[0_14px_40px_rgba(138,154,123,0.35)] transition-all cursor-pointer tracking-wide disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isLoading ? "..." : "Send"}
@@ -256,40 +299,58 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
 };
 
 /* ─────────────────── REFERENCE PANEL ───────────────────── */
-const ReferenceCard = ({ reference }) => (
-  <div className="p-5 bg-[#1c1917]/60 border border-[#44403c]/30 rounded-2xl shadow-sm hover:shadow-md hover:border-[#6b7d5e]/50 transition-all duration-200 cursor-pointer">
+const ReferenceCard = ({ reference, isDark }) => (
+  <div
+    className={`p-5 rounded-2xl shadow-sm transition-all duration-200 cursor-pointer ${
+      isDark
+        ? "bg-[#1c1917]/60 border border-[#44403c]/30 hover:border-[#6b7d5e]/50"
+        : "bg-gray-50 border border-gray-200 hover:border-gray-300"
+    }`}
+  >
     <h4
-      className="text-sm font-medium text-stone-200 mb-2 font-serif"
+      className={`text-sm font-medium mb-2 font-serif ${
+        isDark ? "text-stone-200" : "text-gray-800"
+      }`}
     >
       {reference.title}
     </h4>
+
     <p
-      className="text-xs text-[#a8a29e] leading-relaxed line-clamp-3 font-serif"
+      className={`text-xs leading-relaxed line-clamp-3 font-serif ${
+        isDark ? "text-[#a8a29e]" : "text-gray-500"
+      }`}
     >
       {reference.description}
     </p>
   </div>
 );
-
-const ReferencePanel = ({ references }) => (
-  <div className="flex flex-col h-full bg-[#292524]/60 rounded-3xl shadow-sm border border-[#44403c]/30 overflow-hidden">
+const ReferencePanel = ({ references, isDark }) => (
+  <div
+  className={`flex flex-col h-full rounded-3xl shadow-sm overflow-hidden transition-colors duration-300 ${
+    isDark
+      ? "bg-[#292524]/60 border border-[#44403c]/30"
+      : "bg-white/80 backdrop-blur-md border border-gray-200"
+  }`}
+>
     <div className="px-6 py-5">
-      <h3
-        className="text-base font-light text-[#a8a29e] tracking-wide font-serif"
-      >
+      <h3 className={`text-base font-light tracking-wide font-serif ${
+  isDark ? "text-[#a8a29e]" : "text-gray-600"
+}`}>
         From your material
       </h3>
     </div>
     <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-3">
       {references.length === 0 ? (
         <div className="flex items-center justify-center h-32">
-          <p className="text-xs text-[#78716c] font-light italic">
+        <p className={`text-xs font-light italic ${
+  isDark ? "text-[#78716c]" : "text-gray-400"
+}`}>
             Sources will appear here after you ask a question
           </p>
         </div>
       ) : (
         references.map((ref, i) => (
-          <ReferenceCard key={i} reference={ref} />
+          <ReferenceCard key={i} reference={ref} isDark={isDark}/>
         ))
       )}
     </div>
@@ -343,14 +404,15 @@ const Ask = () => {
         documentName={documentName}
         pageCount={pageCount}
         onUploadClick={() => fileInputRef.current?.click()}
+        isDark={isDark}
       />
       <main className="flex-1 overflow-hidden">
         <div className="max-w-6xl mx-auto flex gap-5 px-8 py-5 h-full">
           <div className="flex-[2.2] min-w-0">
-            <ChatSection onReferencesUpdate={setReferences} documentId={documentId} />
+            <ChatSection onReferencesUpdate={setReferences} documentId={documentId} isDark={isDark} />
           </div>
           <div className="flex-1 min-w-0">
-            <ReferencePanel references={references} />
+            <ReferencePanel references={references} isDark={isDark}/>
           </div>
         </div>
       </main>

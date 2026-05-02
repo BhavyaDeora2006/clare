@@ -9,6 +9,7 @@ import cardRoutes from "./routes/card.routes.js";
 import refineRoutes from "./routes/refine.routes.js";
 import askRoutes from "./routes/ask.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 dotenv.config()
 
@@ -24,7 +25,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
 }));
-
+// app.use(cors())
 app.use("/api/upload", uploadRoutes);
 app.use(express.json())
 
@@ -35,6 +36,7 @@ app.use("/api/cards", cardRoutes);
 app.use("/api/echo", echoRoutes);
 app.use("/api/refine", refineRoutes);
 app.use("/api/ask", askRoutes);
+app.use("/api/user", userRoutes);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })

@@ -1,5 +1,5 @@
 import { supabase } from "./supabaseClient"
-
+import apiClient from "./apiClient"
 // Sign Up
 export const signUp = async (email, password) => {
     return await supabase.auth.signUp({
@@ -53,3 +53,8 @@ export const updatePassword = async (newPassword) => {
         password: newPassword,
     })
 }
+
+export const deleteAccount = async () => {
+  const res = await apiClient.delete("/user/delete-account");
+  return res.data;
+};

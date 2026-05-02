@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePreferences } from "../context/PreferencesContext";
-import { signOut, signOutGlobal } from "../services/authServices";
+import { deleteAccount, signOut, signOutGlobal } from "../services/authServices";
 import { supabase } from "../services/supabaseClient";
 import Navbar from "../components/Navbar";
 
@@ -817,11 +817,19 @@ export default function SettingsModal() {
     };
 
     const handleDeleteConfirm = async () => {
-        if (deleteInput === 'DELETE') {
-            await supabase.auth.signOut();
-            navigate('/login');
-        }
-    };
+  if (deleteInput !== "DELETE") return;
+
+  try {
+    await deleteAccount();
+    await signOut();
+    localStorage.clear();
+    // after deletion, session is invalid anyway
+    navigate("/home");
+
+  } catch (err) {
+    console.error("Delete failed:", err);
+  }
+};
 
     const ActiveContent = SECTIONS[activeSection];
     // isDark is always derived from the SAVED prefs — reflects the currently active theme.
