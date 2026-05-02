@@ -4,36 +4,8 @@ import Navbar from "../components/Navbar";
 import Loader from "../components/Loader";
 import bgImage from "../assets/test-light-bg.png";
 import { supabase } from "../services/supabaseClient";
-import { fetchDecks as fetchEchoDecks } from "../services/echoService";
-import { fetchDecks as fetchRefineDecks, fetchAllQuizzes } from "../services/refineService";
 import { usePreferences } from "../context/PreferencesContext";
 
-
-/* ═══════════════════════════════════════════════════
-   STAT CARD — same style as Craft / Refine cards
-   ═══════════════════════════════════════════════════ */
-const StatCard = ({ value, label, icon, isDark }) => (
-  <div
-    className={`
-      rounded-2xl p-7
-      ${isDark ? 'bg-[#292524]/60 border-[#44403c]/30' : 'bg-white/45 border-[#d6d3d1]/40'}
-      shadow-[0_20px_60px_rgba(0,0,0,0.05)]
-      shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]
-      transition-all duration-300
-      ${isDark ? 'hover:bg-[#292524]/80' : 'hover:bg-white/55'} hover:shadow-[0_20px_60px_rgba(0,0,0,0.07)]
-    `}
-  >
-    <div className="flex items-start justify-between mb-4">
-      <span className="text-[24px]">{icon}</span>
-    </div>
-    <p className={`text-[32px] font-bold tracking-tight leading-none m-0 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>
-      {value}
-    </p>
-    <p className={`text-[13px] mt-2 m-0 tracking-wide ${isDark ? 'text-[#78716c]' : 'text-[#78716c]'}`}>
-      {label}
-    </p>
-  </div>
-);
 
 /* ═══════════════════════════════════════════════════
    PROGRESS BAR — matching Craft clarity bar
