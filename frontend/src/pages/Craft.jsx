@@ -4,7 +4,7 @@ import { evaluateClarity } from "../utils/clarityEngine";
 import bgImage from "../assets/test-light-bg.png";
 import apiClient from '../services/apiClient';
 import { usePreferences } from '../context/PreferencesContext';
-
+import { useNavigate } from "react-router-dom";
 const Craft = () => {
   const { prefs } = usePreferences();
   const isDark = prefs.theme === 'dark';
@@ -16,7 +16,7 @@ const Craft = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasEvaluated, setHasEvaluated] = useState(false);
-
+const navigate = useNavigate();
   const handleGenerate = async () => {
     const result = evaluateClarity(input);
 
@@ -36,6 +36,7 @@ const Craft = () => {
       const res = await apiClient.post("/learning/generate", {
         intent: input.trim()
       });
+      navigate(`/learn?pathId=${res.id}`);
       console.log("Learning Path:", res.data);
     } catch (err) {
       console.error("API Error:", err);

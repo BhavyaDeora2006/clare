@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import DashboardPage from "./pages/DashboardPage";
+import Dashboard from "./pages/settings";
+import DashboardPage from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { supabase } from "./services/supabaseClient";
 import { PreferencesProvider } from "./context/PreferencesContext";
@@ -24,8 +24,11 @@ function AppContent() {
       if (event === 'PASSWORD_RECOVERY' && session) {
         navigate('/reset-password');
       } else if (event === 'SIGNED_IN' && session) {
-        navigate('/dashboard');
-      }
+  const isAuthPage = ['/login', '/home'].includes(window.location.pathname);
+  if (isAuthPage) {
+    navigate('/dashboard');
+  }
+}
     });
 
     return () => subscription.unsubscribe();

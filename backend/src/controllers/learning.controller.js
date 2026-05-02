@@ -50,7 +50,7 @@ export const generateLearningPath = async (req, res) => {
       messages: [
         {
           role: "user",
-          content: buildPrompt(intent),
+          content: await buildPrompt(intent, user_id),
         },
       ],
       temperature: 0.7,

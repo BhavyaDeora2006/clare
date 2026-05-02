@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getSession } from './authServices';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:9000";
 const apiClient = axios.create({
     baseURL: `${BASE_URL}/api`,
 });

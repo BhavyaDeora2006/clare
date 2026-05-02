@@ -5,11 +5,12 @@ import Loader from '../components/Loader';
 import { fetchAllPaths, toggleTopic, updatePathProgress } from '../services/learningService';
 import { usePreferences } from '../context/PreferencesContext';
 import bgImage from "../assets/test-light-bg.png";
-
+import { useSearchParams } from "react-router-dom";
 /* ═══════════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS — injected via <style> tag
    (Tailwind has no built-in for these custom keyframes)
    ═══════════════════════════════════════════════════════════ */
+
 const AnimationStyles = () => (
   <style>{`
     @keyframes fadeSlideUp {
@@ -146,16 +147,16 @@ const Shimmer = ({ className }) => (
   <div className={`animate-pulse bg-[#e4e4e0] rounded ${className}`} />
 );
 
-const LearnSkeleton = () => (
+const LearnSkeleton = ({isDark}) => (
   <div className="flex-1 flex gap-7 max-w-[1280px] w-full mx-auto px-9 py-7 items-start">
     <div className="flex-[0_0_42%] flex flex-col gap-6">
-      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7">
+      <div className={`${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7`}>
         <Shimmer className="h-4 w-32 mb-4" />
         <Shimmer className="h-6 w-48 mb-3" />
         <Shimmer className="h-3 w-64 mb-3" />
         <Shimmer className="h-3 w-40" />
       </div>
-      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7">
+      <div className={`${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-[30px] py-7`}>
         <div className="flex items-baseline justify-between mb-3">
           <Shimmer className="h-5 w-32" /><Shimmer className="h-4 w-20" />
         </div>
@@ -175,16 +176,16 @@ const LearnSkeleton = () => (
       </div>
     </div>
     <div className="flex-1 flex flex-col gap-5">
-      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden">
+      <div className={`${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden`}>
         <div className="px-7 pt-6"><Shimmer className="h-5 w-40 mb-2" /><Shimmer className="h-3 w-24" /></div>
-        <div className="bg-[#fafaf8] mx-5 my-4 rounded-xl border border-[#eeede9] px-7 py-6 min-h-[200px] flex flex-col gap-3">
+        <div className={`${isDark ? 'bg-[#1c1917]' : 'bg-[#fafaf8]'} mx-5 my-4 rounded-xl border border-[#eeede9] px-7 py-6 min-h-[200px] flex flex-col gap-3 `}>
           <Shimmer className="h-4 w-full" /><Shimmer className="h-4 w-3/4" /><Shimmer className="h-4 w-5/6" />
         </div>
         <div className="px-7 pb-6 pt-4 flex items-center gap-4">
           <Shimmer className="h-9 w-9 rounded-full" /><Shimmer className="h-[4px] flex-1" /><Shimmer className="h-4 w-20" />
         </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] py-5 px-6">
+      <div className={`${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] py-5 px-6 `}>
         <Shimmer className="h-5 w-24 mb-4" />
         <Shimmer className="h-10 w-full rounded-lg mb-2" />
         <Shimmer className="h-10 w-full rounded-lg" />
@@ -196,7 +197,7 @@ const LearnSkeleton = () => (
 /* ═══════════════════════════════════════════════════════════
    PATH SELECTOR — multiple learning paths
    ═══════════════════════════════════════════════════════════ */
-const PathSelector = ({ paths, selectedId, onSelect }) => {
+const PathSelector = ({ paths, selectedId, onSelect, isDark }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selected = paths.find(p => p.id === selectedId);
   if (paths.length <= 1) return null;
@@ -204,11 +205,15 @@ const PathSelector = ({ paths, selectedId, onSelect }) => {
     <div className="relative mb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.04)] px-5 py-3 cursor-pointer border-none text-left transition-colors hover:bg-[#fafaf8]"
+        className={`w-full flex items-center justify-between rounded-xl px-5 py-3 cursor-pointer border-none text-left transition-colors ${
+  isDark ? 'bg-[#292524] hover:bg-[#1c1917]' : 'bg-white hover:bg-[#fafaf8]'
+}`}
       >
         <div>
           <span className="text-[11px] text-[#aaa] uppercase tracking-[0.08em] font-medium">Active path</span>
-          <p className="text-[14px] font-semibold text-[#1a1a1a] m-0 mt-0.5">{selected?.title || 'Select a path'}</p>
+          <p className={`text-[14px] font-semibold ${
+  isDark ? 'text-stone-200' : 'text-[#1a1a1a]'} 
+} m-0 mt-0.5`}>{selected?.title || 'Select a path'}</p>
         </div>
         <svg className={`w-4 h-4 text-[#aaa] transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -220,7 +225,7 @@ const PathSelector = ({ paths, selectedId, onSelect }) => {
             <button
               key={p.id}
               onClick={() => { onSelect(p.id); setIsOpen(false); }}
-              className={`w-full text-left px-5 py-3 border-none cursor-pointer transition-colors text-[13px] ${p.id === selectedId ? 'bg-[#eef8f2] text-[#2a7d52] font-medium' : 'bg-white text-[#555] hover:bg-[#fafaf8]'
+              className={`w-full text-left px-5 py-3 border-none cursor-pointer transition-colors text-[13px] ${p.id === selectedId ? `${isDark ? 'bg-[#2a3326] text-[#8a9a7b]' : 'bg-[#eef6ea] text-[#8a9a7b]'} font-medium` : `${isDark ? 'bg-[#292524] text-[#a8a29e]' :  'bg-white text-[#555]'} hover:${isDark ? 'bg-[#1c1917]' : 'bg-[#fafaf8]'}`
                 }`}
             >
               <p className="m-0 font-medium">{p.title}</p>
@@ -395,7 +400,8 @@ const LearningPath = ({ chapters, progress, activeLessonId, onLessonClick ,isDar
               <ChapterStatusIcon lessons={ch.lessons} />
             </div>
             {/* chapter-title */}
-            <span className="text-[15px] font-semibold text-[#1a1a1a]">{ch.title}</span>
+            <span className={`text-[15px] font-semibold ${
+  isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}`}>{ch.title}</span>
           </div>
           {/* chapter-menu */}
           <button
@@ -418,7 +424,9 @@ const LearningPath = ({ chapters, progress, activeLessonId, onLessonClick ,isDar
                   // lesson-item base
                   'flex items-center gap-[10px] py-[7px] px-3 rounded-[10px] relative transition-[background,transform] duration-[200ms,150ms]',
                   // active
-                  isActive ? 'bg-[#eef8f2]' : '',
+                  isActive
+  ? (isDark ? 'bg-[#2a3326]' : 'bg-[#eef6ea]')
+  : '',
                   // locked
                   isLocked ? 'cursor-default opacity-55 lesson-locked-item' : 'cursor-pointer lesson-hover',
                 ].join(' ')}
@@ -433,8 +441,10 @@ const LearningPath = ({ chapters, progress, activeLessonId, onLessonClick ,isDar
                   className={[
                     'text-[14px]',
                     isActive
-                      ? 'font-medium text-[#2a7d52]'   // lesson-active .lesson-title
-                      : 'font-normal text-[#444]',
+  ? 'font-medium text-[#8a9a7b]'
+  : isDark
+    ? 'font-normal text-[#d6d3d1]'
+    : 'font-normal text-[#57534e]'
                   ].join(' ')}
                 >
                   {lesson.title}
@@ -482,7 +492,7 @@ const CompletionOverlay = ({ onNext, hasNext }) => {
       {/* completion-check */}
       <div className="text-[48px] mb-3 animate-check-drop">✅</div>
       {/* completion-text */}
-      <div className="text-[18px] font-semibold text-[#2a7d52] mb-1">Topic Complete!</div>
+      <div className="text-[18px] font-semibold text-[#8a9a7b] mb-1">Topic Complete!</div>
       {/* completion-sub */}
       <div className="text-[13px] text-[#aaa]">
         {hasNext ? 'Moving to next lesson…' : 'You finished this module!'}
@@ -494,13 +504,22 @@ const CompletionOverlay = ({ onNext, hasNext }) => {
 /* ═══════════════════════════════════════════════════════════
    LESSON PLAYER
    ═══════════════════════════════════════════════════════════ */
-const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
+const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate, isDark }) => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [visibleCount, setVisibleCount] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+
+  const { prefs } = usePreferences();
+  const speedMultiplier = {
+  sage: 1.3,
+  slate: 0.8,
+  neutral: 1.0
+}[prefs?.accent || 'neutral'];
+
 
   const timerRef = useRef(null);
   const playerRef = useRef(null);
@@ -594,27 +613,27 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
     const advance = () => {
       if (cancelled) return;
       if (visibleCount < slide.length) {
-        timerRef.current = setTimeout(() => { if (!cancelled) setVisibleCount(v => v + 1); }, 1200);
+        timerRef.current = setTimeout(() => { if (!cancelled) setVisibleCount(v => v + 1); }, 1200*speedMultiplier);
       } else if (slideIdx < currentSlides.length - 1) {
         timerRef.current = setTimeout(() => {
           if (cancelled) return;
           setSlideIdx(s => s + 1); setVisibleCount(0);
-        }, 1000);
+        }, 1000*speedMultiplier);
       } else {
         timerRef.current = setTimeout(() => {
           if (cancelled) return;
           setIsComplete(true); setIsPlaying(false);
           if (onComplete) onComplete(lesson.id);
-        }, 1000);
+        }, 1000*speedMultiplier);
       }
     };
 
     if (visibleCount === 0) {
-      timerRef.current = setTimeout(() => { if (!cancelled) setVisibleCount(1); }, 400);
+      timerRef.current = setTimeout(() => { if (!cancelled) setVisibleCount(1); }, 400*speedMultiplier);
     } else if (visibleCount <= slide.length) {
       const sentence = slide[visibleCount - 1];
       if (isMutedRef.current || !window.speechSynthesis || !sentence) {
-        timerRef.current = setTimeout(() => { if (!cancelled) advance(); }, 1500);
+        timerRef.current = setTimeout(() => { if (!cancelled) advance(); }, 1500*speedMultiplier);
       } else {
         timerRef.current = setTimeout(() => {
           if (cancelled) return;
@@ -709,7 +728,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
   if (!lesson) {
     return (
       /* learn-card player-card (empty state) */
-      <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] overflow-hidden">
+      <div className={`${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] overflow-hidden`}>
         {/* player-empty */}
         <div className="flex flex-col items-center justify-center min-h-[280px] text-[#bbb] text-[14px] gap-3">
           {/* player-empty-icon */}
@@ -725,7 +744,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
     ? // player-fullscreen
     'bg-white rounded-none shadow-none flex flex-col justify-center h-screen w-screen'
     : // learn-card player-card
-    'bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] overflow-hidden';
+    `${isDark ? 'bg-[#292524]' : 'bg-white'} rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] overflow-hidden`;
 
   return (
     <div className={`${cardCls} relative`} ref={playerRef}>
@@ -733,7 +752,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
       {/* player-header-row */}
       <div className={`flex items-baseline justify-between ${isFullscreen ? 'px-[60px] pt-10' : 'px-7 pt-[22px]'}`}>
         {/* player-header */}
-        <div className={`font-semibold text-[#1a1a1a] tracking-[-0.01em] ${isFullscreen ? 'text-[24px]' : 'text-[17px]'}`}>
+        <div className={`font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}  tracking-[-0.01em] ${isFullscreen ? 'text-[24px]' : 'text-[17px]'}`}>
           {lesson.title}
         </div>
         {/* player-header-right */}
@@ -759,7 +778,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
           'flex flex-col justify-center relative',
           isFullscreen
             ? 'bg-[#f8f8f6] border border-[#eee] mx-[60px] my-6 min-h-[340px] flex-1 px-12 py-10'
-            : 'bg-[#fafaf8] mx-5 my-4 rounded-xl border border-[#eeede9] px-7 py-6 min-h-[200px]',
+            : `${isDark ? 'bg-[#1c1917]' : 'bg-[#fafaf8]'} mx-5 my-4 rounded-xl border border-[#eeede9] px-7 py-6 min-h-[200px]`,
         ].join(' ')}
       >
         {isComplete && <CompletionOverlay hasNext={hasNext} />}
@@ -772,7 +791,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
                 'animate-fade-slide-up mb-3 last:mb-0 [animation-delay:0s]',
                 isFullscreen
                   ? 'text-[22px] text-[#2a2a2a] leading-[2]'
-                  : 'text-[15px] text-[#3a3a3a] leading-[1.75]',
+                  : `text-[15px] ${isDark ? 'text-[#d6d3d1]' : 'text-[#3a3a3a]'} leading-[1.75]`,
               ].join(' ')}
             >
               {sentence}
@@ -909,7 +928,7 @@ const TakeNotes = ({ flow, globalIdx, currentSentence,isDark }) => {
       {/* notes-header */}
       <div className="flex items-center justify-between mb-[14px]">
         {/* notes-title */}
-        <span className={`text-[16px] font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}`}>Take Notes</span>
+        <span className={`text-[16px] font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'} `}>Take Notes</span>
         <button
           className={`bg-transparent border-none text-[18px] cursor-pointer py-1 px-2 rounded-md tracking-[2px] transition-colors duration-200
           ${isDark ? 'text-[#78716c] hover:text-[#a8a29e] hover:bg-[#44403c]/40' : 'text-[#bbb] hover:text-[#888] hover:bg-[#f5f5f2]'}`}
@@ -924,7 +943,7 @@ const TakeNotes = ({ flow, globalIdx, currentSentence,isDark }) => {
         <div
           key={i}
           className={`flex items-center justify-between py-[14px] px-4 rounded-[10px] mb-2 transition-colors duration-200
-            ${isDark ? 'bg-[#44403c]/30 hover:bg-[#44403c]/50' : 'bg-[#fafaf8] hover:bg-[#f2f2ee]'}`}
+            ${isDark ? 'bg-[#44403c]/30 hover:bg-[#44403c]/50' :  'hover:bg-[#f2f2ee]'}`}
         >
           {/* note-text  — replicates ::before via inline span */}
           <span className={`text-[13.5px] leading-[1.5] flex-1 ${isDark ? 'text-[#a8a29e]' : 'text-[#555]'}`}>
@@ -974,7 +993,8 @@ const Learn = () => {
   const { prefs } = usePreferences();
   const isDark = prefs.theme === 'dark';
   const navigate = useNavigate();
-
+   const [searchParams] = useSearchParams();
+const pathIdFromUrl = searchParams.get("pathId");
   /* ── Fetch state ── */
   const [paths, setPaths] = useState([]);
   const [selectedPathId, setSelectedPathId] = useState(null);
@@ -996,9 +1016,17 @@ const Learn = () => {
       const allPaths = await fetchAllPaths();
       setPaths(allPaths);
       if (allPaths.length > 0 && !selectedPathId) {
-        const active = allPaths.find(p => p.progress < 100) || allPaths[0];
-        setSelectedPathId(active.id);
-      }
+  if (pathIdFromUrl) {
+    const exists = allPaths.find(p => p.id === pathIdFromUrl);
+    if (exists) {
+      setSelectedPathId(pathIdFromUrl);
+      return;
+    }
+  }
+
+  const active = allPaths.find(p => p.progress < 100) || allPaths[0];
+  setSelectedPathId(active.id);
+}
     } catch (err) {
       console.error('Failed to load paths:', err);
       setError('Could not load your learning paths. Please check your connection and try again.');
@@ -1103,14 +1131,14 @@ const Learn = () => {
       <Navbar />
 
       {/* Loading */}
-      {loading && <div className="relative z-10"><LearnSkeleton /></div>}
+      {loading && <div className="relative z-10"><LearnSkeleton isDark={isDark}/></div>}
 
       {/* Error */}
       {!loading && error && (
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="text-center max-w-md">
             <div className="text-[48px] mb-4">⚠️</div>
-            <h2 className="text-[22px] font-semibold text-[#1a1a1a] mb-2">Something went wrong</h2>
+            <h2 className="text-[22px] font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}  mb-2">Something went wrong</h2>
             <p className="text-[14px] text-[#888] leading-relaxed mb-6">{error}</p>
             <button
               onClick={loadPaths}
@@ -1127,7 +1155,7 @@ const Learn = () => {
         <div className="flex-1 flex items-center justify-center relative z-10">
           <div className="text-center max-w-md">
             <div className="text-[48px] mb-4">📖</div>
-            <h2 className="text-[22px] font-semibold text-[#1a1a1a] mb-2">No learning paths yet</h2>
+            <h2 className="text-[22px] font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}  mb-2">No learning paths yet</h2>
             <p className="text-[14px] text-[#888] leading-relaxed mb-6">
               Start by crafting a study intent. CLARE will generate a personalized learning path for you.
             </p>
@@ -1170,6 +1198,7 @@ const Learn = () => {
               onComplete={handleLessonComplete}
               chapters={chapters}
               onProgressUpdate={setPlayerProgress}
+              isDark={isDark}
             />
             <TakeNotes
               flow={liveActiveLesson?.flow || []}

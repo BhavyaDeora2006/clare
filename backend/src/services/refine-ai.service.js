@@ -1,51 +1,44 @@
 import { groq } from "../config/groq.js";
+import { questPrompt } from "../prompts/questPrompt.js";
 
-const buildPrompt = (content) => `
-You are an AI that generates quizzes STRICTLY from given content.
+export const generateQuiz = async (text, userId) => {
+  console.log("UPLOAD CONTROLLER HIT");
+  try {
+    console.log("GEN QUIZ START");
 
-RULES:
-- Use ONLY the provided content
-- Do NOT use outside knowledge
-- Do NOT hallucinate
-- If unsure, skip that part
-- Return ONLY valid JSON
+    const prompt = await questPrompt(text, userId);
+    console.log("PROMPT BUILT");
 
-FORMAT:
-{
-  "title": "short topic title",
-  "questions": [
-    {
-      "question": "...",
-      "options": ["...", "...", "...", "..."],
-      "correct_answer": "..."
-    }
-  ]
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      temperature: 0.3,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+
+    console.log("AI RESPONSE RECEIVED");
+
+    const content = response.choices[0].message.content;
+
+// 🔹 Step 1: extract JSON safely
+const jsonMatch = content.match(/\{[\s\S]*\}/);
+
+if (!jsonMatch) {
+  console.error("AI RAW RESPONSE:", content);
+  throw new Error("No valid JSON found");
 }
 
-CONTENT:
-"""
-${content}
-"""
-`;
+// 🔹 Step 2: parse only the JSON part
+const cleanContent = jsonMatch[0];
 
-export const generateQuiz = async (text) => {
-  const response = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    temperature: 0.3,
-    messages: [
-      {
-        role: "user",
-        content: buildPrompt(text),
-      },
-    ],
-  });
+return JSON.parse(cleanContent);
 
-  const content = response.choices[0].message.content;
-
-  try {
-    return JSON.parse(content);
   } catch (err) {
-    console.error("AI PARSE ERROR:", content);
-    throw new Error("Invalid AI response format");
+    console.error("GENERATE QUIZ ERROR:", err);
+    throw err; // let controller handle
   }
 };

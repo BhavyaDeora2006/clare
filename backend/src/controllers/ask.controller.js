@@ -9,8 +9,8 @@ export const askQuestion = async (req, res) => {
     if (!question) {
       return res.status(400).json({ error: "Question is required" });
     }
-
-    const result = await askQuestionService({ question, documentId });
+    const userId = req.user.id
+    const result = await askQuestionService({ question, documentId, userId });
 
     return res.status(200).json(result);
   } catch (error) {

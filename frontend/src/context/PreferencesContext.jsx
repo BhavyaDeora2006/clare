@@ -79,7 +79,7 @@ useEffect(() => {
         .upsert({
           user_id: user.id,
           ...updatedPrefs,
-        });
+        },{ onConflict: "user_id" });
 
       if (error) throw error;
 

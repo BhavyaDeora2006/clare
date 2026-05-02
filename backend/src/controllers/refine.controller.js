@@ -10,14 +10,18 @@ export const uploadNotesController = async (req, res) => {
 
     const user_id = req.user.id
     // 🔐 1. HASH
+    console.log("STEP 1: file received");
     const hash = generateHash(fileBuffer);
 
     // 🔍 2. CHECK EXISTING QUIZ (FIXED: file_hash)
+console.log("STEP 2: checking existing");
     const { data: existing } = await supabase
       .from("refine_quizzes")
       .select("*")
       .eq("file_hash", hash)
 .eq("user_id", user_id)
+
+  .eq("deck_id", deckId || null)
       .maybeSingle();
 
     if (existing) {
@@ -28,6 +32,8 @@ export const uploadNotesController = async (req, res) => {
     }
 
     // 📄 3. EXTRACT TEXT
+
+console.log("STEP 3: extracting text");
     const rawText = await extractPdfText(fileBuffer);
 
     // 🧹 4. CLEAN TEXT
@@ -35,10 +41,12 @@ export const uploadNotesController = async (req, res) => {
     console.log("TEXT SAMPLE:", cleanedText.slice(0, 200));
 
    // 🤖 5. GENERATE QUIZ
-const quizData = await generateQuiz(cleanedText);
+
+console.log("STEP 4: generating quiz");
+const quizData = await generateQuiz(cleanedText, user_id);
 
 const questions = quizData.questions || [];
-
+console.log("STEP 5: quiz generated");
 // 💾 6. STORE IN DB (PUT YOUR CODE HERE)
 const { data: inserted, error } = await supabase
   .from("refine_quizzes")

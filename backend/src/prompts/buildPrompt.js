@@ -1,5 +1,13 @@
-export const buildPrompt = (intent) => `
+import { getPreferenceModifiers } from "../services/getPreferenceModifier.js";
+
+export const buildPrompt = async (intent, userId) => {
+  // 🔹 fetch modifier directly here
+  const prefsModifier = await getPreferenceModifiers(userId);
+
+  return `
 You are an AI that creates structured learning paths WITH content.
+
+${prefsModifier}
 
 Return ONLY valid JSON.
 
@@ -33,10 +41,10 @@ Format:
     "t1": {
       "title": "Topic title",
       "flow": [
-  "Explain step 1 clearly",
-  "Explain step 2 clearly",
-  "Explain step 3 clearly"
-],
+        "Explain step 1 clearly",
+        "Explain step 2 clearly",
+        "Explain step 3 clearly"
+      ],
       "example": "Simple example if relevant",
       "key_points": ["point1", "point2"]
     }
@@ -49,6 +57,8 @@ Rules:
 - Provide content for EVERY topic
 - Keep explanations beginner-friendly but meaningful
 - explanation must be split into 3 short lines inside "flow"
+
 User intent:
 "${intent}"
 `;
+};

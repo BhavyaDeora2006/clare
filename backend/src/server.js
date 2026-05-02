@@ -14,8 +14,16 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 9000
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  process.env.FRONTEND_URL,
+];
 
-app.use(cors())
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
 
 app.use("/api/upload", uploadRoutes);
 app.use(express.json())

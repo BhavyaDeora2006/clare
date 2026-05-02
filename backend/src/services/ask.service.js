@@ -5,7 +5,7 @@ import { getRelevantChunks } from "./retrieval.service.js";
 import { buildAskPrompt } from "../prompts/askPrompt.js";
 import { groq } from "../config/groq.js";
 
-export const askQuestionService = async ({ question, documentId }) => {
+export const askQuestionService = async ({ question, documentId, userId }) => {
   try {
     // 1. Generate embedding for question
     const queryEmbedding = await generateEmbedding(question);
@@ -14,7 +14,7 @@ export const askQuestionService = async ({ question, documentId }) => {
     const chunks = await getRelevantChunks(queryEmbedding,documentId, 4);
 
     // 3. Build prompt
-    const prompt = buildAskPrompt(chunks, question);
+    const prompt = await buildAskPrompt(chunks, question, userId);
 
     // 4. Call AI
     const completion = await groq.chat.completions.create({
