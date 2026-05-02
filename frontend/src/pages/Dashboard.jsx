@@ -4,6 +4,7 @@ import { usePreferences } from "../context/PreferencesContext";
 import { signOut, signOutGlobal } from "../services/authServices";
 import { supabase } from "../services/supabaseClient";
 import Navbar from "../components/Navbar";
+import bgImage from "../assets/test-light-bg.png";
 
 /* ─────────────────────── Reusable Components ─────────────────────── */
 
@@ -109,7 +110,7 @@ const SectionContainer = ({ title, subtitle, children, footer }) => (
 );
 
 // Sidebar
-const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) => {
+const Sidebar = ({ activeSection, onSelect, onBack, onDeleteAccount }) => {
     const { avatarPreview } = usePreferences();
     const [user, setUser] = useState(null);
 
@@ -149,14 +150,14 @@ const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) =
     ];
 
     return (
-        <div className={`w-[236px] shrink-0 border-r flex flex-col pt-9 px-5 pb-7 transition-colors duration-300 ${isDark ? 'border-[#44403c]/60 bg-[#1a1816]' : 'border-[rgba(214,211,208,0.7)] bg-[#fafaf8]'}`}>
-            {/* ── User Profile ── */}
+        <div className="w-[236px] shrink-0 border-r border-[rgba(214,211,208,0.7)] flex flex-col pt-9 px-5 pb-7 bg-[#fafaf8]">
+            {/* ── User Profile: more gap and bottom margin ── */}
             <div className="flex items-center gap-[14px] px-1.5 mb-9">
                 <div className={`w-[50px] h-[50px] rounded-full shrink-0 overflow-hidden shadow-[0_0_0_2px_${isDark ? '#292524' : '#fff'}]  ${isDark ? 'bg-[#292524]' : 'bg-[#f4f6f1]'}`}>
                     <img src={avatarPreview || '/default-avatar.png'} alt="avatar" className="w-full h-full object-cover rounded-full" />
                 </div>
                 <div className="min-w-0">
-                    <p className={`text-[15px] font-semibold m-0 whitespace-nowrap overflow-hidden text-ellipsis ${isDark ? 'text-stone-200' : 'text-[#292524]'}`}>
+                    <p className="text-[15px] font-semibold text-[#292524] m-0 whitespace-nowrap overflow-hidden text-ellipsis">
                         {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
                     </p>
                     <p className="text-[12.5px] text-[#a8a29e] mt-1 mb-0 whitespace-nowrap overflow-hidden text-ellipsis">
@@ -165,7 +166,7 @@ const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) =
                 </div>
             </div>
 
-            {/* ── Nav Items ── */}
+            {/* ── Nav Items: more gap between each item ── */}
             <nav className="flex-1 flex flex-col gap-1.5">
                 {navItems.map((item) => {
                     const isActive = activeSection === item.id;
@@ -173,17 +174,10 @@ const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) =
                         <button
                             key={item.id}
                             onClick={() => onSelect(item.id)}
-                            className={`flex items-center gap-3 w-full py-[13px] px-4 rounded-xl border-none cursor-pointer text-[14px] font-medium text-left transition-all duration-150 ${
-                                isActive
-                                    ? isDark ? 'bg-[#8a9a7b]/20 text-[#a8c090]' : 'bg-[#8a9a7b]/14 text-[#4a6040]'
-                                    : isDark ? 'bg-transparent text-[#a8a29e] hover:bg-[#292524]/60' : 'bg-transparent text-[#78716c] hover:bg-stone-100/60'
-                            }`}
+                            className={`flex items-center gap-3 w-full py-[13px] px-4 rounded-xl border-none cursor-pointer text-[14px] font-medium text-left transition-all duration-150 ${isActive ? "bg-[#8a9a7b]/14 text-[#4a6040]" : "bg-transparent text-[#78716c]"
+                                }`}
                         >
-                            <span className={`flex ${
-                                isActive
-                                    ? isDark ? 'text-[#a8c090]' : 'text-[#6b7d5e]'
-                                    : 'text-[#a8a29e]'
-                            }`}>
+                            <span className={`flex ${isActive ? "text-[#6b7d5e]" : "text-[#a8a29e]"}`}>
                                 {item.icon}
                             </span>
                             {item.label}
@@ -192,15 +186,7 @@ const Sidebar = ({ activeSection, onSelect, onDeleteAccount, isDark = false }) =
                 })}
             </nav>
 
-            {/* ── Sidebar footer ── */}
-            <div className={`mt-auto pt-6 border-t ${isDark ? 'border-[#44403c]/60' : 'border-[rgba(214,211,208,0.6)]'}`}>
-                <button
-                    onClick={onDeleteAccount}
-                    className={`py-[11px] px-4 text-[13.5px] text-red-500/70 bg-transparent border-none cursor-pointer w-full text-left rounded-xl transition-all duration-150 mt-1 ${isDark ? 'hover:bg-[#292524]/60' : 'hover:bg-gray-100/50'}`}
-                >
-                    Delete account
-                </button>
-            </div>
+
         </div>
     );
 };
@@ -769,35 +755,20 @@ const SECTIONS = {
 
 export default function SettingsModal() {
     const navigate = useNavigate();
-    // Only destructure what we need — do NOT pull updateField from context here.
-    // All edits must go through pendingPrefs so the global theme never changes prematurely.
-    const { prefs, savePreferences } = usePreferences();
-
+    const { prefs, updateField, savePreferences, loadPreferences } = usePreferences();
     const [isOpen, setIsOpen] = useState(true);
     const [activeSection, setActiveSection] = useState("study");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteInput, setDeleteInput] = useState('');
-
-    // ── Deferred save: local staging area ──
-    // Initialised once at mount from the currently-saved prefs.
-    // We intentionally do NOT sync this with a useEffect — we want it to
-    // stay as a frozen snapshot until the user either Saves or Cancels.
-    const [pendingPrefs, setPendingPrefs] = useState(() => ({ ...prefs }));
-
-    // All setting controls call this — never the context's updateField directly.
-    const updatePendingField = (key, value) => {
-        setPendingPrefs(prev => ({ ...prev, [key]: value }));
-    };
 
     const closeDashboard = () => {
         setIsOpen(false);
         navigate(-1);
     };
 
-    // Commit: push pendingPrefs into the real context + backend.
     const handleSave = async () => {
         try {
-            await savePreferences(pendingPrefs);
+            await savePreferences();
             console.log("Successfully saved preferences");
             closeDashboard();
         } catch (err) {
@@ -805,9 +776,8 @@ export default function SettingsModal() {
         }
     };
 
-    // Discard: reset pending to the last saved state, close without touching prefs.
     const handleCancel = () => {
-        setPendingPrefs({ ...prefs });
+        loadPreferences(); // Revert any unsaved changes from context
         closeDashboard();
     };
 
@@ -819,15 +789,12 @@ export default function SettingsModal() {
     };
 
     const ActiveContent = SECTIONS[activeSection];
-    // isDark is always derived from the SAVED prefs — reflects the currently active theme.
-    // The modal appearance matches the rest of the app, not the pending selection.
-    const isDark = prefs.theme === 'dark';
 
     if (!isOpen) {
         return (
             <>
                 <Navbar onAvatarClick={() => setIsOpen(true)} />
-                <div className="relative z-10 flex items-center justify-center min-h-screen"></div>
+                <div className="relative z-10 flex items-center justify-center min-h-screen "></div>
             </>
         );
     }
@@ -837,15 +804,15 @@ export default function SettingsModal() {
             <Navbar onAvatarClick={() => setIsOpen(true)} />
             <div className="fixed inset-0 z-50 flex items-center justify-center">
                 <div
-                    className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+                    className="absolute inset-0 bg-black/15 backdrop-blur-[2px]"
                     onClick={closeDashboard}
                 />
 
-                {/* Modal */}
-                <div className={`animate-in relative z-10 w-full max-w-[1000px] h-[650px] backdrop-blur-[20px] rounded-[20px] flex overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)] transition-colors duration-300 ${isDark ? 'bg-[#1c1917]/95 border border-[#44403c]/60' : 'bg-white/95 border border-white/40'}`}>
+                {/* Modal — slightly taller to give content room */}
+                <div className="animate-in relative z-10 w-full max-w-[1000px] h-[650px] bg-white/95 backdrop-blur-[20px] rounded-[20px] flex overflow-hidden shadow-[0_25px_60px_-12px_rgba(0,0,0,0.18),0_0_0_1px_rgba(0,0,0,0.04)]">
                     <button
                         onClick={closeDashboard}
-                        className={`absolute top-5 right-5 z-20 p-2 rounded-lg border-none bg-transparent cursor-pointer transition-colors ${isDark ? 'text-[#a8a29e] hover:bg-[#44403c]/50' : 'text-[#a8a29e] hover:bg-[#a8a29e]/10'}`}
+                        className="absolute top-5 right-5 z-20 p-2 rounded-lg border-none bg-transparent cursor-pointer text-[#a8a29e] hover:bg-[#a8a29e]/10 transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -857,19 +824,16 @@ export default function SettingsModal() {
                         onSelect={setActiveSection}
                         onBack={closeDashboard}
                         onDeleteAccount={() => setShowDeleteModal(true)}
-                        isDark={isDark}
                     />
 
-                    {/* ── Content area ── */}
-                    <div className={`flex-1 pt-10 px-11 pb-9 overflow-hidden flex flex-col transition-colors duration-300 ${isDark ? 'bg-[#1c1917]/80' : ''}`}>
-                        {/* prefs → pendingPrefs (local draft), updateField → updatePendingField (never touches context) */}
+                    {/* ── Content area: more padding on all sides ── */}
+                    <div className="flex-1 pt-10 px-11 pb-9 overflow-hidden flex flex-col">
                         <ActiveContent
-                            prefs={pendingPrefs}
-                            updateField={updatePendingField}
+                            prefs={prefs}
+                            updateField={updateField}
                             onSave={handleSave}
                             onCancel={handleCancel}
                             onDeleteAccount={() => setShowDeleteModal(true)}
-                            isDark={isDark}
                         />
                     </div>
                 </div>
@@ -877,26 +841,29 @@ export default function SettingsModal() {
                 {/* Delete Account Modal */}
                 {showDeleteModal && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                        <div className={`rounded-2xl p-8 max-w-md w-full mx-4 shadow-xl border transition-colors duration-300 ${isDark ? 'bg-[#1c1917] border-[#44403c]/50' : 'bg-white border-transparent'}`}>
+                        <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-xl">
                             <div className="flex items-center gap-3 mb-4">
                                 <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
-                                <h3 className={`text-xl font-semibold m-0 ${isDark ? 'text-stone-200' : 'text-stone-800'}`}>Delete your account</h3>
+                                <h3 className="text-xl font-semibold text-stone-800 m-0">Delete your account</h3>
                             </div>
-                            <p className={`text-[14px] mb-6 m-0 leading-relaxed ${isDark ? 'text-[#a8a29e]' : 'text-stone-600'}`}>
+                            <p className="text-[14px] text-stone-600 mb-6 m-0 leading-relaxed">
                                 This will end your session. Type <strong>DELETE</strong> to confirm.
                             </p>
                             <input
                                 type="text"
                                 value={deleteInput}
                                 onChange={(e) => setDeleteInput(e.target.value)}
-                                className={`w-full px-4 py-3 border rounded-xl mb-6 outline-none focus:border-red-400 text-[14px] transition-colors ${isDark ? 'bg-[#292524]/60 border-[#44403c]/50 text-stone-200 placeholder:text-[#57534e]' : 'bg-white border-stone-300 text-stone-800'}`}
+                                className="w-full px-4 py-3 border border-stone-300 rounded-xl mb-6 outline-none focus:border-red-400 text-stone-800 text-[14px]"
                             />
                             <div className="flex justify-end gap-3">
                                 <button
-                                    onClick={() => { setShowDeleteModal(false); setDeleteInput(''); }}
-                                    className={`px-5 py-2.5 text-[14px] font-medium bg-transparent border-none cursor-pointer rounded-xl transition-colors ${isDark ? 'text-stone-300 hover:bg-[#44403c]/50' : 'text-stone-600 hover:bg-stone-100'}`}
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setDeleteInput('');
+                                    }}
+                                    className="px-5 py-2.5 text-[14px] font-medium text-stone-600 bg-transparent border-none cursor-pointer hover:bg-stone-100 rounded-xl transition-colors"
                                 >
                                     Cancel
                                 </button>

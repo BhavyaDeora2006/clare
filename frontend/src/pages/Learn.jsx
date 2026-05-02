@@ -334,24 +334,26 @@ const ChapterStatusIcon = ({ lessons }) => {
 /* ═══════════════════════════════════════════════════════════
    CURRENT MODULE CARD
    ═══════════════════════════════════════════════════════════ */
-const CurrentModuleCard = ({ moduleName, moduleDescription, currentPosition }) => (
+const CurrentModuleCard = ({ moduleName, moduleDescription, currentPosition, isDark }) => (
   /* learn-card */
-  <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] px-[30px] py-7">
+  <div className={`rounded-2xl px-[30px] py-7
+    ${isDark ? 'bg-[#292524]/60 border-[#44403c]/30' : 'bg-white/45 border-[#d6d3d1]/40'}
+    shadow-[0_20px_60px_rgba(0,0,0,0.05)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]`}>
     {/* module-card-header */}
-    <div className="text-[18px] font-light text-[#888] mb-4 tracking-[0.01em]">
-      Current <strong className="font-semibold text-[#333]">Module</strong>
+    <div className={`text-[18px] font-light mb-4 tracking-[0.01em] ${isDark ? 'text-[#a8a29e]' : 'text-[#888]'}`}>
+      Current <strong className={`font-semibold ${isDark ? 'text-stone-200' : 'text-[#333]'}`}>Module</strong>
     </div>
     {/* module-card-title */}
-    <div className="text-[22px] font-bold text-[#1a1a1a] mb-2 tracking-[-0.01em]">
+    <div className={`text-[22px] font-bold mb-2 tracking-[-0.01em] ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}`}>
       {moduleName}
     </div>
     {/* module-card-desc */}
-    <div className="text-[14px] text-[#888] mb-[14px] leading-[1.5]">
+    <div className={`text-[14px] mb-[14px] leading-[1.5] ${isDark ? 'text-[#a8a29e]' : 'text-[#888]'}`}>
       {moduleDescription}
     </div>
     {/* module-card-position */}
-    <div className="text-[13px] text-[#aaa] leading-[1.5]">
-      <strong className="text-[#999] font-medium">You are here:</strong> {currentPosition}
+    <div className={`text-[13px] leading-[1.5] ${isDark ? 'text-[#78716c]' : 'text-[#aaa]'}`}>
+      <strong className={`font-medium ${isDark ? 'text-[#a8a29e]' : 'text-[#999]'}`}>You are here:</strong> {currentPosition}
     </div>
   </div>
 );
@@ -359,23 +361,25 @@ const CurrentModuleCard = ({ moduleName, moduleDescription, currentPosition }) =
 /* ═══════════════════════════════════════════════════════════
    LEARNING PATH
    ═══════════════════════════════════════════════════════════ */
-const LearningPath = ({ chapters, progress, activeLessonId, onLessonClick }) => (
+const LearningPath = ({ chapters, progress, activeLessonId, onLessonClick ,isDark}) => (
   /* wrapped in learn-card */
-  <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] px-[30px] py-7">
+  <div className={`rounded-2xl px-[30px] py-7
+    ${isDark ? 'bg-[#292524]/60 border-[#44403c]/30' : 'bg-white/45 border-[#d6d3d1]/40'}
+    shadow-[0_20px_60px_rgba(0,0,0,0.05)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]`}>
     {/* path-header */}
     <div className="flex items-baseline justify-between mb-3">
       {/* path-title */}
-      <span className="text-[20px] font-semibold text-[#1a1a1a] tracking-[-0.01em]">Learning Path</span>
+      <span className={`text-[20px] font-semibold tracking-[-0.01em] ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}`}>Learning Path</span>
       {/* path-percent */}
-      <span className="text-[14px] text-[#888] font-normal">{progress}% complete</span>
+      <span className={`text-[14px] font-normal ${isDark ? 'text-[#a8a29e]' : 'text-[#888]'}`}>{progress}% complete</span>
     </div>
 
     {/* path-progress-bar */}
-    <div className="w-full h-[4px] bg-[#e8e8e4] rounded mb-7 overflow-hidden">
+    <div className={`w-full h-[4px] rounded mb-7 overflow-hidden ${isDark ? 'bg-[#44403c]' : 'bg-[#e8e8e4]'}`}>
       {/* path-progress-fill */}
       <div
-        className="h-full bg-[#4caf7d] rounded transition-[width] duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={{ width: `${progress}%` }}
+        className="h-full rounded transition-[width] duration-[600ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={{ width: `${progress}%`, background: 'linear-gradient(90deg, #7c8c6e 0%, #8a9a7b 50%, #a3b18a 100%)',}}
       />
     </div>
 
@@ -855,7 +859,7 @@ const LessonPlayer = ({ lesson, onComplete, chapters, onProgressUpdate }) => {
 /* ═══════════════════════════════════════════════════════════
    TAKE NOTES
    ═══════════════════════════════════════════════════════════ */
-const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
+const TakeNotes = ({ flow, globalIdx, currentSentence,isDark }) => {
   const [notes, setNotes] = useState([]);
   const [input, setInput] = useState('');
   const prevFlowRef = useRef(null);
@@ -898,14 +902,17 @@ const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
 
   return (
     /* notes-card  (learn-card with tighter padding) */
-    <div className="bg-white rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.04),0_0_1px_rgba(0,0,0,0.06)] py-5 px-6">
+    <div className={`rounded-2xl py-5 px-6
+      ${isDark ? 'bg-[#292524]/60 border-[#44403c]/30' : 'bg-white/45 border-[#d6d3d1]/40'}
+      shadow-[0_20px_60px_rgba(0,0,0,0.05)] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]`}>
 
       {/* notes-header */}
       <div className="flex items-center justify-between mb-[14px]">
         {/* notes-title */}
-        <span className="text-[16px] font-semibold text-[#1a1a1a]">Take Notes</span>
+        <span className={`text-[16px] font-semibold ${isDark ? 'text-stone-200' : 'text-[#1a1a1a]'}`}>Take Notes</span>
         <button
-          className="bg-transparent border-none text-[#bbb] text-[18px] cursor-pointer py-1 px-2 rounded-md tracking-[2px] transition-colors duration-200 hover:text-[#888] hover:bg-[#f5f5f2]"
+          className={`bg-transparent border-none text-[18px] cursor-pointer py-1 px-2 rounded-md tracking-[2px] transition-colors duration-200
+          ${isDark ? 'text-[#78716c] hover:text-[#a8a29e] hover:bg-[#44403c]/40' : 'text-[#bbb] hover:text-[#888] hover:bg-[#f5f5f2]'}`}
           aria-label="Notes menu"
         >
           •••
@@ -916,11 +923,12 @@ const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
         /* note-item */
         <div
           key={i}
-          className="flex items-center justify-between py-[14px] px-4 bg-[#fafaf8] rounded-[10px] mb-2 transition-colors duration-200 hover:bg-[#f2f2ee]"
+          className={`flex items-center justify-between py-[14px] px-4 rounded-[10px] mb-2 transition-colors duration-200
+            ${isDark ? 'bg-[#44403c]/30 hover:bg-[#44403c]/50' : 'bg-[#fafaf8] hover:bg-[#f2f2ee]'}`}
         >
           {/* note-text  — replicates ::before via inline span */}
-          <span className="text-[13.5px] text-[#555] leading-[1.5] flex-1">
-            <span className="mr-2 text-[#ccc] font-bold">{note.auto ? '·' : '+'}</span>
+          <span className={`text-[13.5px] leading-[1.5] flex-1 ${isDark ? 'text-[#a8a29e]' : 'text-[#555]'}`}>
+            <span className={`mr-2 font-bold ${isDark ? 'text-[#78716c]' : 'text-[#ccc]'}`}>{note.auto ? '·' : '+'}</span>
             {note.text}
           </span>
 
@@ -932,7 +940,8 @@ const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
 
           {/* note-link-btn */}
           <button
-            className="bg-transparent border-none text-[#ccc] cursor-pointer p-1 shrink-0 flex items-center transition-colors duration-200 hover:text-[#888]"
+            className={`bg-transparent border-none cursor-pointer p-1 shrink-0 flex items-center transition-colors duration-200
+            ${isDark ? 'text-[#78716c] hover:text-[#a8a29e]' : 'text-[#ccc] hover:text-[#888]'}`}
             aria-label="Open externally"
           >
             <ExternalLinkIcon />
@@ -943,10 +952,11 @@ const TakeNotes = ({ flow, globalIdx, currentSentence }) => {
       {/* note-add-wrap */}
       <div className="flex items-center gap-2 pt-[6px]">
         {/* note-add-plus */}
-        <span className="text-[#ccc] text-[14px] font-light">+</span>
+        <span className={`text-[14px] font-light ${isDark ? 'text-[#78716c]' : 'text-[#ccc]'}`}>+</span>
         {/* note-add-input */}
         <input
-          className="flex-1 border-none bg-transparent text-[13.5px] text-[#888] outline-none font-[inherit] placeholder-[#ccc]"
+          className={`flex-1 border-none bg-transparent text-[13.5px] outline-none font-[inherit]
+            ${isDark ? 'text-[#a8a29e] placeholder-[#78716c]' : 'text-[#888] placeholder-[#ccc]'}`}
           placeholder="Add a new note..."
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -1137,17 +1147,19 @@ const Learn = () => {
 
           {/* learn-col-left */}
           <div className="learn-col-left flex-[0_0_42%] flex flex-col gap-6 max-h-[calc(100vh-100px)] overflow-y-auto">
-            <PathSelector paths={paths} selectedId={selectedPathId} onSelect={setSelectedPathId} />
+            <PathSelector paths={paths} selectedId={selectedPathId} onSelect={setSelectedPathId} isDark={isDark}/>
             <CurrentModuleCard
               moduleName={data.moduleName}
               moduleDescription={data.moduleDescription}
               currentPosition={data.currentPosition}
+              isDark={isDark}
             />
             <LearningPath
               chapters={chapters}
               progress={progress}
               activeLessonId={liveActiveLesson?.id}
               onLessonClick={lesson => setActiveLesson(lesson)}
+              isDark={isDark}
             />
           </div>
 
@@ -1163,6 +1175,7 @@ const Learn = () => {
               flow={liveActiveLesson?.flow || []}
               globalIdx={playerProgress.globalIdx}
               currentSentence={playerProgress.currentSentence}
+              isDark={isDark}
             />
           </div>
         </div>

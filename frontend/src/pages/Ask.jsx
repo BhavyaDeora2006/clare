@@ -6,31 +6,31 @@ import bgImage from "../assets/test-light-bg.png";
 
 /* ──────────────────────── CONTEXT BAR ───────────────────── */
 const ContextBar = ({ documentName, pageCount, onUploadClick }) => (
-  <div className="mx-8 mt-3 mb-1 rounded-2xl border border-stone-100 bg-white/70 px-7 py-3 flex items-center justify-between">
+  <div className="mx-8 mt-3 mb-1 rounded-2xl border border-[#44403c]/30 bg-[#292524]/60 px-7 py-3 flex items-center justify-between">
     <div className="flex items-center gap-2 text-sm text-stone-500">
-      <span className="text-stone-400 font-light">Active Context:</span>
+      <span className="text-[#a8a29e] font-light">Active Context:</span>
       {documentName ? (
         <>
-          <span className="font-medium text-stone-600">{documentName}</span>
-          <span className="text-stone-300 mx-1">|</span>
-          <span className="text-stone-400 font-light">
+          <span className="font-medium text-stone-200">{documentName}</span>
+          <span className="text-[#44403c] mx-1">|</span>
+          <span className="text-[#a8a29e] font-light">
             Uploaded: {pageCount} {pageCount === 1 ? "page" : "pages"}
           </span>
         </>
       ) : (
-        <span className="text-stone-400 italic">No document selected</span>
+        <span className="text-[#a8a29e] italic">No document selected</span>
       )}
     </div>
 
     <div className="flex items-center gap-6">
-      <button onClick={onUploadClick} className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
+      <button onClick={onUploadClick} className="text-sm text-[#a8a29e] hover:text-stone-200 transition-colors cursor-pointer font-light tracking-wide">
         Change context
       </button>
-      <span className="text-stone-200">|</span>
-      <button onClick={onUploadClick} className="text-sm text-stone-400 hover:text-stone-600 transition-colors cursor-pointer font-light tracking-wide">
+      <span className="text-[#44403c]">|</span>
+      <button onClick={onUploadClick} className="text-sm text-[#a8a29e] hover:text-stone-200 transition-colors cursor-pointer font-light tracking-wide">
         Upload new
       </button>
-      <button className="p-1 text-stone-300 hover:text-stone-500 transition-colors cursor-pointer">
+      <button className="p-1 text-[#a8a29e] hover:text-stone-200 transition-colors cursor-pointer">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
         </svg>
@@ -44,13 +44,13 @@ const TypingIndicator = () => (
   <div className="flex justify-center">
     <div className="w-full max-w-2xl">
       <div
-        className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm font-serif"
+        className="px-6 py-5 bg-[#1c1917]/60 border border-[#44403c]/30 rounded-2xl shadow-sm font-serif"
       >
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:0ms]" />
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:150ms]" />
-          <span className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:300ms]" />
-          <span className="ml-2 text-xs text-stone-400 font-light">Thinking...</span>
+          <span className="w-2 h-2 bg-[#6b7d5e] rounded-full animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 bg-[#6b7d5e] rounded-full animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 bg-[#6b7d5e] rounded-full animate-bounce [animation-delay:300ms]" />
+          <span className="ml-2 text-xs text-[#a8a29e] font-light">Thinking...</span>
         </div>
       </div>
     </div>
@@ -61,15 +61,15 @@ const TypingIndicator = () => (
 const EmptyState = () => (
   <div className="flex-1 flex items-center justify-center">
     <div className="text-center max-w-md">
-      <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-stone-100 flex items-center justify-center">
-        <svg className="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+      <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-[#292524]/80 flex items-center justify-center">
+        <svg className="w-8 h-8 text-[#6b7d5e]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
         </svg>
       </div>
-      <h3 className="text-lg font-light text-stone-500 mb-2 font-serif">
+      <h3 className="text-lg font-light text-stone-200 mb-2 font-serif">
         Ask anything about your material
       </h3>
-      <p className="text-sm text-stone-400 font-light leading-relaxed">
+      <p className="text-sm text-[#a8a29e] font-light leading-relaxed">
         Type a question below and I'll find the most relevant information from your uploaded documents.
       </p>
     </div>
@@ -78,19 +78,21 @@ const EmptyState = () => (
 
 /* ──────────────────── MESSAGE BUBBLE ────────────────────── */
 const MessageBubble = ({ message }) => {
+  const { avatarPreview } = usePreferences();
+
   if (message.role === "user") {
     return (
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-stone-300 flex-shrink-0 overflow-hidden mt-0.5">
+        <div className="w-8 h-8 rounded-full bg-[#44403c] flex-shrink-0 overflow-hidden mt-0.5">
           <img
-            src="https://i.pravatar.cc/40?img=47"
+            src={avatarPreview}
             alt="user"
             className="w-full h-full object-cover"
             onError={(e) => { e.target.style.display = "none"; }}
           />
         </div>
         <div
-          className="px-5 py-3 bg-stone-50 border border-stone-100 rounded-2xl rounded-tl-sm text-sm text-stone-600 leading-relaxed max-w-lg font-serif"
+          className="px-5 py-3 bg-[#292524]/60 border border-[#44403c]/30 rounded-2xl rounded-tl-sm text-sm text-stone-200 leading-relaxed max-w-lg font-serif"
         >
           {message.content}
         </div>
@@ -103,14 +105,14 @@ const MessageBubble = ({ message }) => {
     <div className="flex justify-center">
       <div className="w-full max-w-2xl">
         <div
-          className="px-6 py-5 bg-white border border-stone-100 rounded-2xl shadow-sm font-serif"
+          className="px-6 py-5 bg-[#1c1917]/60 border border-[#44403c]/30 rounded-2xl shadow-sm font-serif"
         >
-          <p className="text-sm text-stone-600 leading-relaxed mb-4 whitespace-pre-wrap">{message.content}</p>
+          <p className="text-sm text-stone-200 leading-relaxed mb-4 whitespace-pre-wrap">{message.content}</p>
           {message.steps && (
-            <ol className="space-y-2 border-t border-stone-100 pt-4">
+            <ol className="space-y-2 border-t border-[#44403c]/30 pt-4">
               {message.steps.map((step, i) => (
-                <li key={i} className="flex gap-3 text-sm text-stone-500 leading-relaxed">
-                  <span className="flex-shrink-0 text-stone-300 font-light w-4 text-right">{i + 1}.</span>
+                <li key={i} className="flex gap-3 text-sm text-[#a8a29e] leading-relaxed">
+                  <span className="flex-shrink-0 text-[#6b7d5e] font-light w-4 text-right">{i + 1}.</span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -210,7 +212,7 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/60 rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
+    <div className="flex flex-col h-full bg-[#292524]/60 rounded-3xl shadow-sm border border-[#44403c]/30 overflow-hidden">
       <div className="flex-1 overflow-y-auto p-7 space-y-6">
         {messages.length === 0 && !isLoading && <EmptyState />}
         {messages.map((msg, i) => (
@@ -220,11 +222,11 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-stone-100 p-5">
-        <div className="flex items-center gap-3 bg-white rounded-2xl px-5 py-3 border border-stone-150 shadow-sm focus-within:border-stone-300 transition-all">
+      <div className="border-t border-[#44403c]/30 p-5">
+        <div className="flex items-center gap-3 bg-[#1c1917]/60 rounded-2xl px-5 py-3 border border-[#44403c]/40 shadow-sm focus-within:border-[#6b7d5e] transition-all">
           <button
             onClick={handleVoiceRecord}
-            className={`p-1 transition-colors cursor-pointer ${isRecording ? "text-red-400 animate-pulse" : "text-stone-300 hover:text-stone-500"}`}
+            className={`p-1 transition-colors cursor-pointer ${isRecording ? "text-red-400 animate-pulse" : "text-[#a8a29e] hover:text-stone-200"}`}
             title={isRecording ? "Stop recording" : "Start voice input"}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -238,12 +240,12 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            className="flex-1 bg-transparent text-sm text-stone-600 placeholder:text-stone-300 outline-none disabled:opacity-50 font-serif"
+            className="flex-1 bg-transparent text-sm text-stone-200 placeholder:text-[#78716c] outline-none disabled:opacity-50 font-serif"
           />
           <button
             onClick={handleSend}
             disabled={isLoading || !inputValue.trim()}
-            className="px-5 py-1.5 text-sm font-light text-white bg-stone-500 rounded-xl hover:bg-stone-600 transition-all cursor-pointer tracking-wide disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-5 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#8a9a7b] to-[#9baf8a] rounded-xl hover:shadow-[0_14px_40px_rgba(138,154,123,0.35)] transition-all cursor-pointer tracking-wide disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isLoading ? "..." : "Send"}
           </button>
@@ -255,14 +257,14 @@ const ChatSection = ({ onReferencesUpdate, documentId }) => {
 
 /* ─────────────────── REFERENCE PANEL ───────────────────── */
 const ReferenceCard = ({ reference }) => (
-  <div className="p-5 bg-white border border-stone-100 rounded-2xl shadow-sm hover:shadow-md hover:border-stone-200 transition-all duration-200 cursor-pointer">
+  <div className="p-5 bg-[#1c1917]/60 border border-[#44403c]/30 rounded-2xl shadow-sm hover:shadow-md hover:border-[#6b7d5e]/50 transition-all duration-200 cursor-pointer">
     <h4
-      className="text-sm font-medium text-stone-600 mb-2 font-serif"
+      className="text-sm font-medium text-stone-200 mb-2 font-serif"
     >
       {reference.title}
     </h4>
     <p
-      className="text-xs text-stone-400 leading-relaxed line-clamp-3 font-serif"
+      className="text-xs text-[#a8a29e] leading-relaxed line-clamp-3 font-serif"
     >
       {reference.description}
     </p>
@@ -270,10 +272,10 @@ const ReferenceCard = ({ reference }) => (
 );
 
 const ReferencePanel = ({ references }) => (
-  <div className="flex flex-col h-full bg-white/60 rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
+  <div className="flex flex-col h-full bg-[#292524]/60 rounded-3xl shadow-sm border border-[#44403c]/30 overflow-hidden">
     <div className="px-6 py-5">
       <h3
-        className="text-base font-light text-stone-500 tracking-wide font-serif"
+        className="text-base font-light text-[#a8a29e] tracking-wide font-serif"
       >
         From your material
       </h3>
@@ -281,7 +283,7 @@ const ReferencePanel = ({ references }) => (
     <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-3">
       {references.length === 0 ? (
         <div className="flex items-center justify-center h-32">
-          <p className="text-xs text-stone-300 font-light italic">
+          <p className="text-xs text-[#78716c] font-light italic">
             Sources will appear here after you ask a question
           </p>
         </div>
